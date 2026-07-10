@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { toast } from 'vue-sonner'
 import { Trash2 } from '@lucide/vue'
 import Sonner from '@/components/ui/sonner/Sonner.vue'
@@ -7,6 +7,14 @@ import DriveHeader from '@/components/layout/DriveHeader.vue'
 import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
 import type { DriveItem } from '@/components/layout/DriveContent.vue'
+import { httpKey } from '@/plugins/axios'
+
+const http = inject(httpKey)
+onMounted(async () => {
+  const res = await http?.get('files')
+
+  console.log('res', res)
+})
 
 // ─── state ───
 const items = ref<DriveItem[]>([])
