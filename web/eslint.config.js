@@ -1,8 +1,8 @@
-import js from "@eslint/js"
-import tseslint from "typescript-eslint"
-import pluginVue from "eslint-plugin-vue"
-import vueParser from "vue-eslint-parser"
-import prettierConfig from "eslint-config-prettier"
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import pluginVue from 'eslint-plugin-vue'
+import vueParser from 'vue-eslint-parser'
+import prettierConfig from 'eslint-config-prettier'
 
 export default tseslint.config(
   // Base recommended rules
@@ -12,7 +12,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   // Vue recommended (flat config)
-  ...pluginVue.configs["flat/recommended"],
+  ...pluginVue.configs['flat/recommended'],
 
   // Prettier — must be last to override conflicting rules
   prettierConfig,
@@ -21,45 +21,45 @@ export default tseslint.config(
   {
     languageOptions: {
       globals: {
-        window: "readonly",
-        document: "readonly",
-        console: "readonly",
-        FileList: "readonly",
-        File: "readonly",
-        HTMLInputElement: "readonly",
-        HTMLElement: "readonly",
-        DragEvent: "readonly",
-        Event: "readonly",
-        NodeJS: "readonly",
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        FileList: 'readonly',
+        File: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLElement: 'readonly',
+        DragEvent: 'readonly',
+        Event: 'readonly',
+        NodeJS: 'readonly',
       },
     },
   },
 
   // Vue SFC-specific
   {
-    files: ["**/*.vue"],
+    files: ['**/*.vue'],
     languageOptions: {
       parser: vueParser,
       parserOptions: {
         parser: tseslint.parser,
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
     },
     rules: {
-      "vue/multi-word-component-names": "off",
+      'vue/multi-word-component-names': 'off',
     },
   },
 
   // Don't enforce default prop values on shadcn-vue generated components
   {
-    files: ["src/components/ui/**/*.vue"],
+    files: ['src/components/ui/**/*.vue'],
     rules: {
-      "vue/require-default-prop": "off",
+      'vue/require-default-prop': 'off',
     },
   },
 
   {
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: ['dist/**', 'node_modules/**'],
   },
 )
