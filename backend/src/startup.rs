@@ -1,5 +1,6 @@
 use std::net::TcpListener;
 
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use sqlx::PgPool;
 
@@ -10,6 +11,7 @@ pub async fn run(lst: TcpListener, db_pool: PgPool) {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Cors::permissive())
             .service(upload_file)
             .service(list_files)
             .service(get_file)

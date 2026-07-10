@@ -13,6 +13,7 @@ name = "bunker"
 path = "src/main.rs"
 
 [dependencies]
+actix-cors = "0.7.0"
 actix-multipart = {version = "0.8.0", features = ["tempfile"]}
 actix-web = "4.14.0"
 chrono = {version = "0.4.45", features = ["serde"]}
