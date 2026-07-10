@@ -1,13 +1,26 @@
 use std::path::PathBuf;
 
 use actix_multipart::form::{MultipartForm, tempfile::TempFile};
-use actix_web::{HttpResponse, Responder, delete, get, post, web::Data};
+use actix_web::{
+    HttpResponse, Responder, delete, get, post,
+    web::{self, Data},
+};
 use sqlx::{PgPool, types::chrono};
 use uuid;
 
 #[derive(MultipartForm)]
 pub struct FileForm {
     file: TempFile,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct FileRow {
+    id: uuid::Uuid,
+    original_name: String,
+    storage_path: String,
+    file_size_bytes: i32,
+    mime_type: String,
+    uploaded_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(serde::Serialize)]
@@ -43,10 +56,10 @@ pub async fn upload_file(
         log::warn!("File content type is not available");
     }
 
-    let res = FileResponse {
+    let res = FileRow {
         id: uuid::Uuid::new_v4(),
         original_name,
-        file_size_bytes: form.file.size,
+        file_size_bytes: form.file.size as i32,
         mime_type: form.file.content_type.unwrap().to_string(),
         storage_path: target_path.to_string_lossy().to_string(),
         uploaded_at: chrono::Utc::now(),
@@ -72,25 +85,79 @@ pub async fn upload_file(
 }
 
 #[get("/files")]
-pub async fn list_files() -> impl Responder {
-    // todo!();
-    HttpResponse::Ok().body("List of files")
+pub async fn list_files(db_pool: web::Data<PgPool>) -> impl Responder {
+    let files = sqlx::query_as!(FileRow, "SELECT * from files")
+        .fetch_all(db_pool.get_ref())
+        .await
+        .expect("Failed to fetch files from the database");
+
+    HttpResponse::Ok().json(files)
 }
 
 #[get("/files/{id}")]
-pub async fn get_file() -> impl Responder {
-    // todo!();
-    HttpResponse::Ok().body("File content")
+pub async fn get_file(id: web::Path<uuid::Uuid>, db_pool: web::Data<PgPool>) -> impl Responder {
+    let file = sqlx::query_as!(FileRow, "SELECT * FROM files WHERE id = $1", *id)
+        .fetch_optional(db_pool.get_ref())
+        .await
+        .expect("Failed to fetch file from the database");
+
+    match file {
+        Some(file) => HttpResponse::Ok().json(file),
+        None => HttpResponse::NotFound().body("File not found"),
+    }
 }
 
 #[delete("/files/{id}")]
-pub async fn delete_file() -> impl Responder {
-    // todo!();
+pub async fn delete_file(id: web::Path<uuid::Uuid>, db_pool: web::Data<PgPool>) -> impl Responder {
+    let file = sqlx::query_as!(FileRow, "SELECT * FROM files WHERE id = $1", *id)
+        .fetch_optional(db_pool.get_ref())
+        .await
+        .expect("Failed to fetch file from the database");
+
+    let file = match file {
+        Some(file) => file,
+        None => return HttpResponse::NotFound().body("File not found"),
+    };
+
+    // Delete the physical file from disk
+    let storage_path = PathBuf::from(&file.storage_path);
+    if storage_path.exists() {
+        std::fs::remove_file(&storage_path).expect("Failed to delete file from storage");
+    }
+
+    // Delete the database record
+    sqlx::query!("DELETE FROM files WHERE id = $1", *id)
+        .execute(db_pool.get_ref())
+        .await
+        .expect("Failed to delete file from the database");
+
     HttpResponse::Ok().body("File deleted successfully")
 }
 
 #[get("/files/{id}/download")]
-pub async fn download_file() -> impl Responder {
-    // todo!();
-    HttpResponse::Ok().body("File download")
+pub async fn download_file(
+    id: web::Path<uuid::Uuid>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let file = sqlx::query_as!(FileRow, "SELECT * FROM files WHERE id = $1", *id)
+        .fetch_optional(db_pool.get_ref())
+        .await
+        .expect("Failed to fetch file from the database");
+
+    let file = match file {
+        Some(file) => file,
+        None => return HttpResponse::NotFound().body("File not found"),
+    };
+
+    let bytes = tokio::fs::read(&file.storage_path)
+        .await
+        .expect("Failed to read file from storage");
+
+    HttpResponse::Ok()
+        .insert_header((
+            "Content-Disposition",
+            format!("attachment; filename=\"{}\"", file.original_name),
+        ))
+        .content_type(file.mime_type)
+        .body(bytes)
 }
