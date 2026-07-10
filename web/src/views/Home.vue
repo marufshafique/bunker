@@ -22,12 +22,20 @@ const filteredItems = computed(() => {
 
 // ─── helpers ───
 function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  return (
+    Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  )
 }
 
 // ─── actions ───
 function addItem(name: string, isFolder: boolean, size = 0) {
-  const item: DriveItem = { id: generateId(), name, isFolder, size, createdAt: Date.now() }
+  const item: DriveItem = {
+    id: generateId(),
+    name,
+    isFolder,
+    size,
+    createdAt: Date.now(),
+  }
   items.value.unshift(item)
 }
 
@@ -44,11 +52,15 @@ function deleteItem(id: string) {
 
 function onCreateFolder(name: string) {
   if (items.value.some((it) => it.name === name && it.isFolder)) {
-    toast('Error', { description: 'A folder with that name already exists.' })
+    toast('Error', {
+      description: 'A folder with that name already exists.',
+    })
     return
   }
   addItem(name, true)
-  toast('Folder created', { description: `"${name}" has been created.` })
+  toast('Folder created', {
+    description: `"${name}" has been created.`,
+  })
 }
 
 function handleFiles(files: FileList) {
@@ -59,7 +71,9 @@ function handleFiles(files: FileList) {
     const dotIdx = name.lastIndexOf('.')
     let base = dotIdx > 0 ? name.slice(0, dotIdx) : name
     const ext = dotIdx > 0 ? name.slice(dotIdx) : ''
-    while (items.value.some((it) => it.name === name && !it.isFolder)) {
+    while (
+      items.value.some((it) => it.name === name && !it.isFolder)
+    ) {
       name = base + ' (' + counter + ')' + ext
       counter++
     }
@@ -67,7 +81,9 @@ function handleFiles(files: FileList) {
     count++
   }
   if (count > 0) {
-    toast('Uploaded', { description: `${count} file${count > 1 ? 's' : ''} added.` })
+    toast('Uploaded', {
+      description: `${count} file${count > 1 ? 's' : ''} added.`,
+    })
   }
 }
 
@@ -106,16 +122,31 @@ onMounted(seedDemo)
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-[#f1f3f6] p-5">
+  <div
+    class="flex min-h-screen items-center justify-center bg-[#f1f3f6] p-5"
+  >
     <!-- ── Main Card ── -->
     <div
-      class="max-w-[1100px] w-full h-[90vh] max-h-[800px] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden">
-      <DriveHeader @create-folder="onCreateFolder" @upload="handleFiles" @refresh="refresh" />
+      class="flex h-[90vh] max-h-[800px] w-full max-w-[1100px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)]"
+    >
+      <DriveHeader
+        @create-folder="onCreateFolder"
+        @upload="handleFiles"
+        @refresh="refresh"
+      />
 
-      <DriveToolbar v-model:view-mode="viewMode" v-model:search-query="searchQuery" />
+      <DriveToolbar
+        v-model:view-mode="viewMode"
+        v-model:search-query="searchQuery"
+      />
 
-      <DriveContent :items="filteredItems" :view-mode="viewMode" :search-query="searchQuery" @delete-item="deleteItem"
-        @upload="handleFiles" />
+      <DriveContent
+        :items="filteredItems"
+        :view-mode="viewMode"
+        :search-query="searchQuery"
+        @delete-item="deleteItem"
+        @upload="handleFiles"
+      />
     </div>
 
     <!-- Toast provider -->

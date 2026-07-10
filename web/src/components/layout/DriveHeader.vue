@@ -45,51 +45,60 @@ function onFileChange(e: Event) {
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-7 py-4 border-b border-[#eef0f2] shrink-0 gap-3 flex-wrap">
+  <header
+    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#eef0f2] px-7 py-4"
+  >
     <!-- Brand -->
-    <div class="flex items-center gap-2.5 font-semibold text-xl tracking-[-0.3px] text-[#1a1a1a]">
+    <div
+      class="flex items-center gap-2.5 text-xl font-semibold tracking-[-0.3px] text-[#1a1a1a]"
+    >
       <Cloud class="size-[30px] text-[#0b57d0]" />
-      <span class="bg-gradient-to-br from-[#0b57d0] to-[#1a73e8] bg-clip-text text-transparent">
+      <span
+        class="bg-gradient-to-br from-[#0b57d0] to-[#1a73e8] bg-clip-text text-transparent"
+      >
         Drive
       </span>
     </div>
 
     <!-- Actions -->
-    <div class="flex items-center gap-2.5 flex-wrap">
+    <div class="flex flex-wrap items-center gap-2.5">
       <Dialog v-model:open="dialogOpen">
         <DialogTrigger as-child>
           <Button
-            class="rounded-full h-9 px-4 gap-1.5 text-sm bg-[#0b57d0] hover:bg-[#0847b0] shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)] hover:-translate-y-px">
+            class="h-9 gap-1.5 rounded-full bg-[#0b57d0] px-4 text-sm shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:-translate-y-px hover:bg-[#0847b0] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)]"
+          >
             <FolderPlus />
             <span class="max-sm:hidden">New folder</span>
           </Button>
         </DialogTrigger>
-        <DialogContent class="sm:max-w-[420px] rounded-[28px] p-8">
+        <DialogContent class="rounded-[28px] p-8 sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle class="flex items-center gap-2.5 text-xl font-semibold">
+            <DialogTitle
+              class="flex items-center gap-2.5 text-xl font-semibold"
+            >
               <FolderPlus class="size-7 text-[#0b57d0]" />
               New folder
             </DialogTitle>
-            <DialogDescription class="text-[#5f6368] mt-1.5">
+            <DialogDescription class="mt-1.5 text-[#5f6368]">
               Enter a name for your new folder.
             </DialogDescription>
           </DialogHeader>
           <Input
             v-model="folderName"
             placeholder="My folder"
-            class="rounded-2xl h-11 border-2 border-[#e8eaed] bg-[#fafbfc] focus-visible:border-[#0b57d0] focus-visible:bg-white text-[15px] focus-visible:ring-0"
+            class="h-11 rounded-2xl border-2 border-[#e8eaed] bg-[#fafbfc] text-[15px] focus-visible:border-[#0b57d0] focus-visible:bg-white focus-visible:ring-0"
             @keydown.enter="submitFolder"
           />
           <DialogFooter class="mt-6 gap-2.5">
             <Button
               variant="secondary"
-              class="rounded-full h-10 px-6 bg-[#f1f3f6] hover:bg-[#e8eaed] text-[#1e1e1e]"
+              class="h-10 rounded-full bg-[#f1f3f6] px-6 text-[#1e1e1e] hover:bg-[#e8eaed]"
               @click="dialogOpen = false"
             >
               Cancel
             </Button>
             <Button
-              class="rounded-full h-10 px-6 bg-[#0b57d0] hover:bg-[#0847b0]"
+              class="h-10 rounded-full bg-[#0b57d0] px-6 hover:bg-[#0847b0]"
               @click="submitFolder"
             >
               Create
@@ -99,17 +108,24 @@ function onFileChange(e: Event) {
       </Dialog>
 
       <Button
-        class="rounded-full h-9 px-4 gap-1.5 text-sm bg-[#0b57d0] hover:bg-[#0847b0] shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)] hover:-translate-y-px"
-        @click="triggerUpload">
+        class="h-9 gap-1.5 rounded-full bg-[#0b57d0] px-4 text-sm shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:-translate-y-px hover:bg-[#0847b0] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)]"
+        @click="triggerUpload"
+      >
         <Upload />
         <span class="max-sm:hidden">Upload</span>
       </Button>
-      <input ref="fileInput" type="file" multiple class="hidden" @change="onFileChange" />
+      <input
+        ref="fileInput"
+        type="file"
+        multiple
+        class="hidden"
+        @change="onFileChange"
+      />
 
       <Button
         variant="secondary"
         size="icon"
-        class="rounded-full size-9 bg-[#f1f3f6] hover:bg-[#e8eaed]"
+        class="size-9 rounded-full bg-[#f1f3f6] hover:bg-[#e8eaed]"
         title="Refresh"
         @click="emit('refresh')"
       >
