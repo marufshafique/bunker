@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useStorage } from '@vueuse/core'
+import { toast } from 'vue-sonner'
 import {
   Folder,
   File,
@@ -10,6 +12,7 @@ import {
   File as FilePdf,
 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import { useDriveFileRepo } from '@/stores/orm'
 
 // ─── types ───
 export interface DriveItem {
@@ -20,15 +23,17 @@ export interface DriveItem {
   createdAt: number
 }
 
+const viewMode = useStorage<'grid' | 'list'>('drive-view-mode', 'grid')
+
 defineProps<{
   items: DriveItem[]
-  viewMode: 'grid' | 'list'
   searchQuery: string
 }>()
 
+const fileRepo = useDriveFileRepo()
+
 const emit = defineEmits<{
   (e: 'delete-item', id: string): void
-  (e: 'upload', files: FileList): void
 }>()
 
 // ─── helpers ───
@@ -113,11 +118,26 @@ function onDragOver(e: DragEvent) {
 function onDragLeave() {
   isDragging.value = false
 }
-function onDrop(e: DragEvent) {
+async function onDrop(e: DragEvent) {
   e.preventDefault()
   isDragging.value = false
-  if (e.dataTransfer?.files?.length) {
-    emit('upload', e.dataTransfer.files)
+  if (!e.dataTransfer?.files?.length) return
+
+  let count = 0
+  for (const file of e.dataTransfer.files) {
+    try {
+      await fileRepo.upload(file)
+      count++
+    } catch {
+      toast('Error', {
+        description: `Failed to upload "${file.name}".`,
+      })
+    }
+  }
+  if (count > 0) {
+    toast('Uploaded', {
+      description: `${count} file${count > 1 ? 's' : ''} uploaded.`,
+    })
   }
 }
 </script>

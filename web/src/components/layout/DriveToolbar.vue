@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Search, LayoutGrid, List } from '@lucide/vue'
+import { useStorage } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 
-const viewMode = defineModel<'grid' | 'list'>('viewMode', {
-  required: true,
-})
+const viewMode = useStorage<'grid' | 'list'>('drive-view-mode', 'grid')
+
 const searchQuery = defineModel<string>('searchQuery', {
   required: true,
 })

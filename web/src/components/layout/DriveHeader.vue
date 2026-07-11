@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Cloud, FolderPlus, Upload, RefreshCw } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -12,34 +13,76 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 
-const emit = defineEmits<{
-  (e: 'create-folder', name: string): void
-  (e: 'upload', files: FileList): void
-  (e: 'refresh'): void
-}>()
+const fileRepo = useDriveFileRepo()
+const folderRepo = useFolderRepo()
 
 const dialogOpen = ref(false)
 const folderName = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-function submitFolder() {
+async function submitFolder() {
   const name = folderName.value.trim()
   if (!name) return
-  emit('create-folder', name)
-  folderName.value = ''
-  dialogOpen.value = false
+
+  if (folderRepo.all().some((f) => f.name === name)) {
+    toast('Error', {
+      description: 'A folder with that name already exists.',
+    })
+    return
+  }
+
+  try {
+    await folderRepo.create({ name })
+    toast('Folder created', {
+      description: `"${name}" has been created.`,
+    })
+    folderName.value = ''
+    dialogOpen.value = false
+  } catch {
+    toast('Error', {
+      description: 'Failed to create folder on the server.',
+    })
+  }
 }
 
 function triggerUpload() {
   fileInput.value?.click()
 }
 
-function onFileChange(e: Event) {
+async function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    emit('upload', target.files)
-    target.value = ''
+  if (!target.files || target.files.length === 0) return
+
+  let count = 0
+  for (const file of target.files) {
+    try {
+      await fileRepo.upload(file)
+      count++
+    } catch {
+      toast('Error', {
+        description: `Failed to upload "${file.name}".`,
+      })
+    }
+  }
+  target.value = ''
+
+  if (count > 0) {
+    toast('Uploaded', {
+      description: `${count} file${count > 1 ? 's' : ''} uploaded.`,
+    })
+  }
+}
+
+async function refresh() {
+  try {
+    await Promise.all([fileRepo.list(), folderRepo.list()])
+    toast('Refreshed', { description: 'View is up to date.' })
+  } catch {
+    toast('Error', {
+      description: 'Failed to refresh from the server.',
+    })
   }
 }
 </script>
@@ -127,7 +170,7 @@ function onFileChange(e: Event) {
         size="icon"
         class="size-9 rounded-full bg-[#f1f3f6] hover:bg-[#e8eaed]"
         title="Refresh"
-        @click="emit('refresh')"
+        @click="refresh"
       >
         <RefreshCw />
       </Button>
