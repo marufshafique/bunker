@@ -23,16 +23,6 @@ pub struct FileRow {
     uploaded_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(serde::Serialize)]
-pub struct FileResponse {
-    id: uuid::Uuid,
-    original_name: String,
-    file_size_bytes: usize,
-    mime_type: String,
-    storage_path: String,
-    uploaded_at: chrono::DateTime<chrono::Utc>,
-}
-
 #[post("/files")]
 pub async fn upload_file(
     MultipartForm(form): MultipartForm<FileForm>,
@@ -44,7 +34,17 @@ pub async fn upload_file(
         .file_name
         .clone()
         .unwrap_or_else(|| "unknown_file.bin".to_string());
-    let target_path = PathBuf::from("uploads").join(&original_name);
+
+    let id = uuid::Uuid::new_v4();
+
+    // Build storage path: uploads/{uuid}.{ext} so files with the same name don't collide
+    let ext = std::path::Path::new(&original_name)
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| format!(".{}", e))
+        .unwrap_or_default();
+    let storage_filename = format!("{}{}", id, ext);
+    let target_path = PathBuf::from("uploads").join(&storage_filename);
 
     form.file
         .file
@@ -57,7 +57,7 @@ pub async fn upload_file(
     }
 
     let res = FileRow {
-        id: uuid::Uuid::new_v4(),
+        id,
         original_name,
         file_size_bytes: form.file.size as i32,
         mime_type: form.file.content_type.unwrap().to_string(),
