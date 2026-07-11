@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { toast } from 'vue-sonner'
 import { Trash2 } from '@lucide/vue'
 import Sonner from '@/components/ui/sonner/Sonner.vue'
@@ -15,7 +16,7 @@ const fileRepo = useDriveFileRepo()
 // ─── local state (folders only, no backend support yet) ───
 const folders = ref<DriveItem[]>([])
 
-const viewMode = ref<'grid' | 'list'>('grid')
+const viewMode = useStorage<'grid' | 'list'>('drive-view-mode', 'grid')
 const searchQuery = ref('')
 
 // ─── computed: merge ORM files + local folders into a single DriveItem[] ───
@@ -150,6 +151,6 @@ onMounted(loadFiles)
     </div>
 
     <!-- Toast provider -->
-    <Sonner rich-colors position="bottom-center" />
+    <Sonner rich-colors close-button position="bottom-right" />
   </div>
 </template>
