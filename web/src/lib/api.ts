@@ -1,4 +1,4 @@
-import { http } from '@/plugins/axios'
+import { http } from '@/stores/orm'
 
 export interface BackendFile {
   id: string

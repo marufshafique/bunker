@@ -8,36 +8,33 @@ import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
 import type { DriveItem } from '@/components/layout/DriveContent.vue'
 import { uploadFile, listFiles, deleteFile } from '@/lib/api'
-import type { BackendFile } from '@/lib/api'
+import { useDriveFileRepo } from '@/stores/orm'
 
-// ─── state ───
-const items = ref<DriveItem[]>([])
+// ─── pinia-orm repository (files) ───
+const fileRepo = useDriveFileRepo()
+
+// ─── local state (folders only, no backend support yet) ───
+const folders = ref<DriveItem[]>([])
+
 const viewMode = ref<'grid' | 'list'>('grid')
 const searchQuery = ref('')
 
-// ─── computed ───
-const filteredItems = computed(() => {
+// ─── computed: merge ORM files + local folders into a single DriveItem[] ───
+const filteredItems = computed<DriveItem[]>(() => {
   const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return items.value
-  return items.value.filter((it) => it.name.toLowerCase().includes(q))
+  const all: DriveItem[] = [
+    ...folders.value,
+    ...fileRepo.all().map((f) => f.toDriveItem()),
+  ]
+  if (!q) return all
+  return all.filter((it) => it.name.toLowerCase().includes(q))
 })
-
-// ─── helpers ───
-function backendFileToDriveItem(f: BackendFile): DriveItem {
-  return {
-    id: f.id,
-    name: f.original_name,
-    isFolder: false,
-    size: f.file_size_bytes,
-    createdAt: new Date(f.uploaded_at).getTime(),
-  }
-}
 
 // ─── actions ───
 async function loadFiles() {
   try {
     const files = await listFiles()
-    items.value = files.map(backendFileToDriveItem)
+    fileRepo.save(files)
   } catch {
     toast('Error', {
       description: 'Failed to load files from the server.',
@@ -45,31 +42,43 @@ async function loadFiles() {
   }
 }
 
-function addItem(name: string, isFolder: boolean, size = 0) {
+function addFolder(name: string) {
   const item: DriveItem = {
     id:
       Date.now().toString(36) +
       Math.random().toString(36).slice(2, 6),
     name,
-    isFolder,
-    size,
+    isFolder: true,
+    size: 0,
     createdAt: Date.now(),
   }
-  items.value.unshift(item)
+  folders.value.unshift(item)
 }
 
 async function deleteItem(id: string) {
-  const idx = items.value.findIndex((it) => it.id === id)
-  if (idx === -1) return
-  const name = items.value[idx].name
-  items.value.splice(idx, 1)
-  try {
-    await deleteFile(id)
-  } catch {
-    toast('Error', {
-      description: `Failed to delete "${name}" from the server.`,
+  // Try ORM (file) first
+  const file = fileRepo.find(id)
+  if (file) {
+    const name = file.original_name
+    fileRepo.destroy(id)
+    try {
+      await deleteFile(id)
+    } catch {
+      toast('Error', {
+        description: `Failed to delete "${name}" from the server.`,
+      })
+    }
+    toast('Deleted', {
+      description: `"${name}" has been removed.`,
+      icon: Trash2,
     })
+    return
   }
+  // Otherwise treat as folder
+  const idx = folders.value.findIndex((f) => f.id === id)
+  if (idx === -1) return
+  const name = folders.value[idx].name
+  folders.value.splice(idx, 1)
   toast('Deleted', {
     description: `"${name}" has been removed.`,
     icon: Trash2,
@@ -77,13 +86,13 @@ async function deleteItem(id: string) {
 }
 
 function onCreateFolder(name: string) {
-  if (items.value.some((it) => it.name === name && it.isFolder)) {
+  if (folders.value.some((it) => it.name === name)) {
     toast('Error', {
       description: 'A folder with that name already exists.',
     })
     return
   }
-  addItem(name, true)
+  addFolder(name)
   toast('Folder created', {
     description: `"${name}" has been created.`,
   })
@@ -94,7 +103,7 @@ async function handleFiles(files: FileList) {
   for (const file of files) {
     try {
       const uploaded = await uploadFile(file)
-      items.value.unshift(backendFileToDriveItem(uploaded))
+      fileRepo.save(uploaded)
       count++
     } catch {
       toast('Error', {
