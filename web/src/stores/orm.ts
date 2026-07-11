@@ -3,6 +3,7 @@ import { createORM, useRepo } from 'pinia-orm'
 import { createPiniaOrmAxios } from '@pinia-orm/axios'
 import type { Pinia } from 'pinia'
 import { DriveFileRepository } from '@/repositories/DriveFileRepository'
+import { FolderRepository } from '@/repositories/FolderRepository'
 
 export { useRepo } from 'pinia-orm'
 
@@ -14,23 +15,14 @@ const http = axios.create({
   },
 })
 
-/**
- * Call once in main.ts: `pinia.use(ormPlugin)`.
- */
 export const ormPlugin = createORM({
   plugins: [createPiniaOrmAxios({ axios: http })],
 })
 
-/**
- * Typed repository for the DriveFile model.
- *
- * Use inside components:
- *   const fileRepo = useDriveFileRepo()
- *   await fileRepo.list()          // fetch & auto-persist
- *   await fileRepo.upload(file)    // upload & auto-persist
- *   await fileRepo.remove(id)      // delete & auto-remove
- *   fileRepo.all()                 // reactive collection
- */
 export function useDriveFileRepo(pinia?: Pinia): DriveFileRepository {
   return useRepo(DriveFileRepository, pinia)
+}
+
+export function useFolderRepo(pinia?: Pinia): FolderRepository {
+  return useRepo(FolderRepository, pinia)
 }
