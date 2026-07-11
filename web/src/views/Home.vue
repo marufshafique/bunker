@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import { Trash2 } from '@lucide/vue'
 import Sonner from '@/components/ui/sonner/Sonner.vue'
@@ -7,14 +7,8 @@ import DriveHeader from '@/components/layout/DriveHeader.vue'
 import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
 import type { DriveItem } from '@/components/layout/DriveContent.vue'
-import { httpKey } from '@/plugins/axios'
-
-const http = inject(httpKey)
-onMounted(async () => {
-  const res = await http?.get('files')
-
-  console.log('res', res)
-})
+import { uploadFile, listFiles, deleteFile } from '@/lib/api'
+import type { BackendFile } from '@/lib/api'
 
 // ─── state ───
 const items = ref<DriveItem[]>([])
@@ -29,16 +23,33 @@ const filteredItems = computed(() => {
 })
 
 // ─── helpers ───
-function generateId(): string {
-  return (
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
-  )
+function backendFileToDriveItem(f: BackendFile): DriveItem {
+  return {
+    id: f.id,
+    name: f.original_name,
+    isFolder: false,
+    size: f.file_size_bytes,
+    createdAt: new Date(f.uploaded_at).getTime(),
+  }
 }
 
 // ─── actions ───
+async function loadFiles() {
+  try {
+    const files = await listFiles()
+    items.value = files.map(backendFileToDriveItem)
+  } catch {
+    toast('Error', {
+      description: 'Failed to load files from the server.',
+    })
+  }
+}
+
 function addItem(name: string, isFolder: boolean, size = 0) {
   const item: DriveItem = {
-    id: generateId(),
+    id:
+      Date.now().toString(36) +
+      Math.random().toString(36).slice(2, 6),
     name,
     isFolder,
     size,
@@ -47,11 +58,18 @@ function addItem(name: string, isFolder: boolean, size = 0) {
   items.value.unshift(item)
 }
 
-function deleteItem(id: string) {
+async function deleteItem(id: string) {
   const idx = items.value.findIndex((it) => it.id === id)
   if (idx === -1) return
   const name = items.value[idx].name
   items.value.splice(idx, 1)
+  try {
+    await deleteFile(id)
+  } catch {
+    toast('Error', {
+      description: `Failed to delete "${name}" from the server.`,
+    })
+  }
   toast('Deleted', {
     description: `"${name}" has been removed.`,
     icon: Trash2,
@@ -71,71 +89,39 @@ function onCreateFolder(name: string) {
   })
 }
 
-function handleFiles(files: FileList) {
+async function handleFiles(files: FileList) {
   let count = 0
   for (const file of files) {
-    let name = file.name
-    let counter = 1
-    const dotIdx = name.lastIndexOf('.')
-    let base = dotIdx > 0 ? name.slice(0, dotIdx) : name
-    const ext = dotIdx > 0 ? name.slice(dotIdx) : ''
-    while (
-      items.value.some((it) => it.name === name && !it.isFolder)
-    ) {
-      name = base + ' (' + counter + ')' + ext
-      counter++
+    try {
+      const uploaded = await uploadFile(file)
+      items.value.unshift(backendFileToDriveItem(uploaded))
+      count++
+    } catch {
+      toast('Error', {
+        description: `Failed to upload "${file.name}".`,
+      })
     }
-    addItem(name, false, file.size)
-    count++
   }
   if (count > 0) {
     toast('Uploaded', {
-      description: `${count} file${count > 1 ? 's' : ''} added.`,
+      description: `${count} file${count > 1 ? 's' : ''} uploaded.`,
     })
   }
 }
 
-function refresh() {
+async function refresh() {
+  await loadFiles()
   toast('Refreshed', { description: 'View is up to date.' })
 }
 
-// ─── seed demo ───
-function seedDemo() {
-  const now = Date.now()
-  const demos = [
-    { name: 'Projects', isFolder: true },
-    { name: 'Designs', isFolder: true },
-    { name: 'Report Q2.pdf', isFolder: false, size: 2457600 },
-    { name: 'Meeting Notes.docx', isFolder: false, size: 184320 },
-    { name: 'Team Photo.png', isFolder: false, size: 4128768 },
-    { name: 'Budget 2026.xlsx', isFolder: false, size: 655360 },
-  ]
-  for (const d of demos) {
-    items.value.push({
-      id: generateId(),
-      name: d.name,
-      isFolder: d.isFolder,
-      size: d.size || 0,
-      createdAt: now - Math.random() * 86400000 * 20,
-    })
-  }
-  items.value.sort((a, b) => {
-    if (a.isFolder && !b.isFolder) return -1
-    if (!a.isFolder && b.isFolder) return 1
-    return a.name.localeCompare(b.name)
-  })
-}
-
-onMounted(seedDemo)
+onMounted(loadFiles)
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen items-center justify-center bg-[#f1f3f6] p-5"
-  >
+  <div class="flex min-h-screen justify-center bg-[#f1f3f6] p-1">
     <!-- ── Main Card ── -->
     <div
-      class="flex h-[90vh] max-h-[800px] w-full max-w-[1100px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)]"
+      class="flex max-h-[99vh] min-h-[99vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-md bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)]"
     >
       <DriveHeader
         @create-folder="onCreateFolder"
