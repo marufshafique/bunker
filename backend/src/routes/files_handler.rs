@@ -21,6 +21,7 @@ pub struct FileRow {
     file_size_bytes: i32,
     mime_type: String,
     uploaded_at: chrono::DateTime<chrono::Utc>,
+    folder_id: Option<uuid::Uuid>,
 }
 
 #[post("/files")]
@@ -63,6 +64,7 @@ pub async fn upload_file(
         mime_type: form.file.content_type.unwrap().to_string(),
         storage_path: target_path.to_string_lossy().to_string(),
         uploaded_at: chrono::Utc::now(),
+        folder_id: None,
     };
 
     sqlx::query!(
