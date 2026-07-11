@@ -1,13 +1,13 @@
 import axios from 'axios'
-import { createORM, useRepo as _useRepo } from 'pinia-orm'
+import { createORM, useRepo } from 'pinia-orm'
 import { createPiniaOrmAxios } from '@pinia-orm/axios'
 import type { Pinia } from 'pinia'
-import { DriveFile } from '@/models/DriveFile'
+import { DriveFileRepository } from '@/repositories/DriveFileRepository'
 
 export { useRepo } from 'pinia-orm'
 
-/** Shared axios instance used by api.ts and the ORM axios plugin. */
-export const http = axios.create({
+/** Shared axios instance used by the ORM axios plugin. */
+const http = axios.create({
   baseURL: 'http://localhost:7000',
   headers: {
     'Content-Type': 'application/json',
@@ -22,12 +22,15 @@ export const ormPlugin = createORM({
 })
 
 /**
- * Convenience: typed useRepo for the DriveFile model.
+ * Typed repository for the DriveFile model.
+ *
  * Use inside components:
  *   const fileRepo = useDriveFileRepo()
- *   fileRepo.all()       // reactive collection
- *   fileRepo.save(data)  // persist API result
+ *   await fileRepo.list()          // fetch & auto-persist
+ *   await fileRepo.upload(file)    // upload & auto-persist
+ *   await fileRepo.remove(id)      // delete & auto-remove
+ *   fileRepo.all()                 // reactive collection
  */
-export function useDriveFileRepo(pinia?: Pinia) {
-  return _useRepo(DriveFile, pinia)
+export function useDriveFileRepo(pinia?: Pinia): DriveFileRepository {
+  return useRepo(DriveFileRepository, pinia)
 }

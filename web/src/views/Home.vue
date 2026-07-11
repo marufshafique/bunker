@@ -7,7 +7,6 @@ import DriveHeader from '@/components/layout/DriveHeader.vue'
 import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
 import type { DriveItem } from '@/components/layout/DriveContent.vue'
-import { uploadFile, listFiles, deleteFile } from '@/lib/api'
 import { useDriveFileRepo } from '@/stores/orm'
 
 // ─── pinia-orm repository (files) ───
@@ -33,8 +32,7 @@ const filteredItems = computed<DriveItem[]>(() => {
 // ─── actions ───
 async function loadFiles() {
   try {
-    const files = await listFiles()
-    fileRepo.save(files)
+    await fileRepo.list()
   } catch {
     toast('Error', {
       description: 'Failed to load files from the server.',
@@ -60,13 +58,13 @@ async function deleteItem(id: string) {
   const file = fileRepo.find(id)
   if (file) {
     const name = file.original_name
-    fileRepo.destroy(id)
     try {
-      await deleteFile(id)
+      await fileRepo.remove(id)
     } catch {
       toast('Error', {
         description: `Failed to delete "${name}" from the server.`,
       })
+      return
     }
     toast('Deleted', {
       description: `"${name}" has been removed.`,
@@ -102,8 +100,7 @@ async function handleFiles(files: FileList) {
   let count = 0
   for (const file of files) {
     try {
-      const uploaded = await uploadFile(file)
-      fileRepo.save(uploaded)
+      await fileRepo.upload(file)
       count++
     } catch {
       toast('Error', {

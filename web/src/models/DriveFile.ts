@@ -4,7 +4,6 @@ export class DriveFile extends Model {
   static entity = 'driveFiles'
   static primaryKey = 'id'
 
-  // Declare typed properties (fields are defined via `fields()`)
   declare id: string
   declare original_name: string
   declare storage_path: string
@@ -23,7 +22,6 @@ export class DriveFile extends Model {
     }
   }
 
-  /** Convenience: total size formatted for display. */
   get displaySize(): string {
     const bytes = this.file_size_bytes
 
@@ -39,12 +37,10 @@ export class DriveFile extends Model {
     )
   }
 
-  /** Convenience: creation date as a timestamp (ms). */
   get createdAtTs(): number {
     return new Date(this.uploaded_at).getTime()
   }
 
-  /** DriveItem-compatible shape used by DriveContent. */
   toDriveItem() {
     return {
       id: this.id,
