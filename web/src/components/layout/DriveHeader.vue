@@ -100,15 +100,15 @@ async function refresh() {
 
 <template>
   <header
-    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#eef0f2] px-7 py-4"
+    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4"
   >
     <!-- Brand -->
     <div
-      class="flex items-center gap-2.5 text-xl font-semibold tracking-[-0.3px] text-[#1a1a1a]"
+      class="flex items-center gap-2.5 text-xl font-semibold tracking-tight text-foreground"
     >
-      <Cloud class="size-[30px] text-[#0b57d0]" />
+      <Cloud class="size-7 text-primary" />
       <span
-        class="bg-gradient-to-br from-[#0b57d0] to-[#1a73e8] bg-clip-text text-transparent"
+        class="bg-gradient-to-br from-primary to-primary/80 bg-clip-text text-transparent"
       >
         Drive
       </span>
@@ -119,40 +119,40 @@ async function refresh() {
       <Dialog v-model:open="dialogOpen">
         <DialogTrigger as-child>
           <Button
-            class="h-9 gap-1.5 rounded-full bg-[#0b57d0] px-4 text-sm shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:-translate-y-px hover:bg-[#0847b0] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)]"
+            class="h-9 gap-1.5 rounded-full bg-primary px-4 text-sm shadow-md hover:-translate-y-px hover:bg-primary/80 hover:shadow-lg"
           >
             <FolderPlus />
             <span class="max-sm:hidden">New folder</span>
           </Button>
         </DialogTrigger>
-        <DialogContent class="rounded-[28px] p-8 sm:max-w-[420px]">
+        <DialogContent class="rounded-2xl p-8 sm:max-w-md">
           <DialogHeader>
             <DialogTitle
               class="flex items-center gap-2.5 text-xl font-semibold"
             >
-              <FolderPlus class="size-7 text-[#0b57d0]" />
+              <FolderPlus class="size-7 text-primary" />
               New folder
             </DialogTitle>
-            <DialogDescription class="mt-1.5 text-[#5f6368]">
+            <DialogDescription class="mt-1.5 text-muted-foreground">
               Enter a name for your new folder.
             </DialogDescription>
           </DialogHeader>
           <Input
             v-model="folderName"
             placeholder="My folder"
-            class="h-11 rounded-2xl border-2 border-[#e8eaed] bg-[#fafbfc] text-[15px] focus-visible:border-[#0b57d0] focus-visible:bg-white focus-visible:ring-0"
+            class="h-11 rounded-2xl border-2 border-border bg-muted/40 text-sm focus-visible:border-primary focus-visible:bg-card focus-visible:ring-0"
             @keydown.enter="submitFolder"
           />
           <DialogFooter class="mt-6 gap-2.5">
             <Button
               variant="secondary"
-              class="h-10 rounded-full bg-[#f1f3f6] px-6 text-[#1e1e1e] hover:bg-[#e8eaed]"
+              class="h-10 rounded-full bg-muted px-6 text-foreground hover:bg-accent"
               @click="dialogOpen = false"
             >
               Cancel
             </Button>
             <Button
-              class="h-10 rounded-full bg-[#0b57d0] px-6 hover:bg-[#0847b0]"
+              class="h-10 rounded-full bg-primary px-6 hover:bg-primary/80"
               @click="submitFolder"
             >
               Create
@@ -162,7 +162,7 @@ async function refresh() {
       </Dialog>
 
       <Button
-        class="h-9 gap-1.5 rounded-full bg-[#0b57d0] px-4 text-sm shadow-[0_2px_6px_rgba(11,87,208,0.2)] hover:-translate-y-px hover:bg-[#0847b0] hover:shadow-[0_4px_12px_rgba(11,87,208,0.3)]"
+        class="h-9 gap-1.5 rounded-full bg-primary px-4 text-sm shadow-md hover:-translate-y-px hover:bg-primary/80 hover:shadow-lg"
         @click="triggerUpload"
       >
         <Upload />
@@ -179,7 +179,7 @@ async function refresh() {
       <Button
         variant="secondary"
         size="icon"
-        class="size-9 rounded-full bg-[#f1f3f6] hover:bg-[#e8eaed]"
+        class="size-9 rounded-full bg-muted hover:bg-accent"
         title="Refresh"
         @click="refresh"
       >

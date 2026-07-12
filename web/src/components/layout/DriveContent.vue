@@ -62,8 +62,8 @@ async function onDrop(e: DragEvent) {
 
 <template>
   <div
-    class="flex-1 overflow-y-auto bg-[#fafbfc] px-7 py-4 pb-7 transition-colors"
-    :class="{ 'bg-[#eef2f7]': isDragging }"
+    class="bg-muted/40 flex-1 overflow-y-auto px-6 py-4 pb-6 transition-colors"
+    :class="{ 'bg-muted': isDragging }"
     @dragover="onDragOver"
     @dragleave="onDragLeave"
     @drop="onDrop"
@@ -71,10 +71,10 @@ async function onDrop(e: DragEvent) {
     <!-- Empty state -->
     <div
       v-if="items.length === 0"
-      class="flex h-full flex-col items-center justify-center p-5 text-center text-[#5f6368]"
+      class="text-muted-foreground flex h-full flex-col items-center justify-center p-5 text-center"
     >
-      <CloudOff class="mb-4 size-[72px] text-[#d1d5db]" />
-      <h3 class="mb-1.5 text-lg font-medium text-[#1e1e1e]">
+      <CloudOff class="text-muted-foreground/50 mb-4 size-16" />
+      <h3 class="text-foreground mb-1.5 text-lg font-medium">
         {{ searchQuery ? 'No results found' : 'Nothing here yet' }}
       </h3>
       <p class="max-w-xs text-sm">

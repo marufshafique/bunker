@@ -93,9 +93,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen justify-center bg-[#f1f3f6] p-1">
+  <div class="flex min-h-screen justify-center bg-muted p-1">
     <div
-      class="flex max-h-[99vh] min-h-[99vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-md bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)]"
+      class="flex max-h-screen min-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md bg-card shadow-2xl"
     >
       <DriveHeader />
 

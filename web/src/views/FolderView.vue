@@ -110,22 +110,22 @@ watch(() => props.id, loadFolder)
 </script>
 
 <template>
-  <div class="flex min-h-screen justify-center bg-[#f1f3f6] p-1">
+  <div class="flex min-h-screen justify-center bg-muted p-1">
     <div
-      class="flex max-h-[99vh] min-h-[99vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-md bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)]"
+      class="flex max-h-screen min-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md bg-card shadow-2xl"
     >
       <header
-        class="flex shrink-0 items-center gap-3 border-b border-[#eef0f2] px-7 py-2.5"
+        class="flex shrink-0 items-center gap-3 border-b border-border px-6 py-2.5"
       >
         <button
-          class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[#5f6368] transition-colors hover:bg-[#f1f3f6] hover:text-[#1a1a1a]"
+          class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           @click="goBack"
         >
           ← My Drive
         </button>
 
-        <span class="text-[#d1d5db]">/</span>
-        <span class="truncate text-sm font-medium text-[#1a1a1a]">
+        <span class="text-muted-foreground/50">/</span>
+        <span class="truncate text-sm font-medium text-foreground">
           {{ folderName }}
         </span>
       </header>

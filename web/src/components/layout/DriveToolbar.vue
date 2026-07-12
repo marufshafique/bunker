@@ -15,18 +15,18 @@ const searchQuery = defineModel<string>('searchQuery', {
 
 <template>
   <div
-    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#f0f2f4] px-7 pt-2 pb-3"
+    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-6 pt-2 pb-3"
   >
     <!-- View toggle -->
-    <div class="flex gap-1 rounded-full bg-[#f1f3f6] p-[3px]">
+    <div class="flex gap-1 rounded-full bg-muted p-0.5">
       <Button
         :variant="viewMode === 'grid' ? 'secondary' : 'ghost'"
         size="sm"
-        class="h-8 rounded-full px-3.5 text-[13px]"
+        class="h-8 rounded-full px-3.5 text-xs"
         :class="
           viewMode === 'grid'
-            ? 'bg-white text-[#1a1a1a] shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:bg-white'
-            : 'bg-transparent text-[#5f6368] hover:bg-[#e8eaed]'
+            ? 'bg-card text-foreground shadow-sm hover:bg-card'
+            : 'bg-transparent text-muted-foreground hover:bg-accent'
         "
         @click="viewMode = 'grid'"
       >
@@ -35,11 +35,11 @@ const searchQuery = defineModel<string>('searchQuery', {
       <Button
         :variant="viewMode === 'list' ? 'secondary' : 'ghost'"
         size="sm"
-        class="h-8 rounded-full px-3.5 text-[13px]"
+        class="h-8 rounded-full px-3.5 text-xs"
         :class="
           viewMode === 'list'
-            ? 'bg-white text-[#1a1a1a] shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:bg-white'
-            : 'bg-transparent text-[#5f6368] hover:bg-[#e8eaed]'
+            ? 'bg-card text-foreground shadow-sm hover:bg-card'
+            : 'bg-transparent text-muted-foreground hover:bg-accent'
         "
         @click="viewMode = 'list'"
       >
@@ -49,14 +49,14 @@ const searchQuery = defineModel<string>('searchQuery', {
 
     <!-- Search -->
     <div
-      class="flex max-w-[340px] min-w-[200px] flex-1 items-center gap-2 rounded-full bg-[#f1f3f6] px-4 transition-colors focus-within:bg-[#e8eaed]"
+      class="flex max-w-sm min-w-48 flex-1 items-center gap-2 rounded-full bg-muted px-4 transition-colors focus-within:bg-accent"
     >
-      <Search class="size-5 shrink-0 text-[#5f6368]" />
+      <Search class="size-5 shrink-0 text-muted-foreground" />
       <input
         v-model="searchQuery"
         type="text"
         placeholder="Search files & folders…"
-        class="w-full border-none bg-transparent py-2.5 font-[inherit] text-sm text-[#1e1e1e] outline-none placeholder:text-[#5f6368]"
+        class="w-full border-none bg-transparent py-2.5 font-[inherit] text-sm text-foreground outline-none placeholder:text-muted-foreground"
       />
     </div>
   </div>

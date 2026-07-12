@@ -27,10 +27,10 @@ function formatDate(ts: number): string {
 
 <template>
   <div
-    class="group cursor-pointer rounded-md border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+    class="group cursor-pointer rounded-md border border-border bg-card p-4 shadow-sm transition-all duration-150 hover:border-muted-foreground/30 hover:shadow-md"
     :class="
       viewMode === 'list'
-        ? 'flex items-center gap-4 rounded-md px-[18px] py-3'
+        ? 'flex items-center gap-4 rounded-md px-4 py-3'
         : 'flex flex-col items-start'
     "
     @click="emit('click-item', item.id)"
@@ -41,7 +41,7 @@ function formatDate(ts: number): string {
       :class="
         viewMode === 'list'
           ? 'size-9 text-xl'
-          : 'mb-3 size-12 text-[28px]'
+          : 'mb-3 size-12 text-2xl'
       "
     >
       <Folder :class="viewMode === 'list' ? 'size-5' : 'size-7'" />
@@ -49,7 +49,7 @@ function formatDate(ts: number): string {
 
     <!-- Name -->
     <div
-      class="mb-1 w-full truncate text-sm font-medium text-[#1e1e1e]"
+      class="mb-1 w-full truncate text-sm font-medium text-foreground"
       :class="{ 'mb-0! flex-1': viewMode === 'list' }"
       :title="item.name"
     >
@@ -58,7 +58,7 @@ function formatDate(ts: number): string {
 
     <!-- Meta -->
     <div
-      class="flex w-full justify-between text-xs text-[#5f6368]"
+      class="flex w-full justify-between text-xs text-muted-foreground"
       :class="{ 'w-auto! gap-6': viewMode === 'list' }"
     >
       <span>—</span>
@@ -73,7 +73,7 @@ function formatDate(ts: number): string {
       <Button
         variant="ghost"
         size="icon-xs"
-        class="rounded-xl bg-[#f1f3f6] text-[#5f6368] hover:bg-[#e8eaed] hover:text-[#1e1e1e]"
+        class="rounded-xl bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
         title="Delete"
         @click.stop="emit('delete-item', item.id)"
       >
