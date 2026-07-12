@@ -103,6 +103,7 @@ async function onDrop(e: DragEvent) {
         @click-item="(id) => emit('click-item', id, true)"
         @delete-item="(id) => emit('delete-item', id)"
       />
+
       <DriveFileItem
         v-for="item in items.filter((i) => !i.isFolder)"
         :key="item.id"

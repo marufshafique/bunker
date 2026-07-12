@@ -13,7 +13,10 @@ export class DriveFileRepository extends AxiosRepository<DriveFile> {
     return this.api().get('/files', { params })
   }
 
-  async upload(file: File, folderId?: string | null): Promise<Response> {
+  async upload(
+    file: File,
+    folderId?: string | null,
+  ): Promise<Response> {
     const formData = new FormData()
     formData.append('file', file)
     const params: Record<string, string> = {}

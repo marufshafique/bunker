@@ -9,6 +9,10 @@ export interface CreateFolderPayload {
 export class FolderRepository extends AxiosRepository<Folder> {
   static useModel = Folder
 
+  foldersById(folderId: string | null): Folder[] {
+    return this.query().where('folder_id', folderId).get()
+  }
+
   async list(folderId?: string | null): Promise<Response> {
     const params: Record<string, string> = {}
     if (folderId) {

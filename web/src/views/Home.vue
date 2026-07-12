@@ -18,10 +18,14 @@ const searchQuery = ref('')
 const filteredItems = computed<DriveItem[]>(() => {
   const q = searchQuery.value.trim().toLowerCase()
   const all: DriveItem[] = [
-    ...folderRepo.all().map((f) => f.toDriveItem()),
+    ...folderRepo.foldersById(null).map((f) => f.toDriveItem()),
     ...fileRepo.all().map((f) => f.toDriveItem()),
   ]
-  if (!q) return all
+
+  if (!q) {
+    return all
+  }
+
   return all.filter((it) => it.name.toLowerCase().includes(q))
 })
 
