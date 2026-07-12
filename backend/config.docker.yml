@@ -1,0 +1,8 @@
+port: 7000
+storage_path: "/app/uploads"
+database:
+  host: "db"
+  port: 5432
+  username: "postgres"
+  password: "password"
+  database_name: "bunker"
