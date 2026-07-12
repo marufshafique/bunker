@@ -9,8 +9,12 @@ export interface CreateFolderPayload {
 export class FolderRepository extends AxiosRepository<Folder> {
   static useModel = Folder
 
-  async list(): Promise<Response> {
-    return this.api().get('/folders')
+  async list(folderId?: string | null): Promise<Response> {
+    const params: Record<string, string> = {}
+    if (folderId) {
+      params.folder_id = folderId
+    }
+    return this.api().get('/folders', { params })
   }
 
   async get(id: string): Promise<Response> {

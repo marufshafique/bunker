@@ -5,15 +5,24 @@ import { DriveFile } from '@/models/DriveFile'
 export class DriveFileRepository extends AxiosRepository<DriveFile> {
   static useModel = DriveFile
 
-  async list(): Promise<Response> {
-    return this.api().get('/files')
+  async list(folderId?: string | null): Promise<Response> {
+    const params: Record<string, string> = {}
+    if (folderId) {
+      params.folder_id = folderId
+    }
+    return this.api().get('/files', { params })
   }
 
-  async upload(file: File): Promise<Response> {
+  async upload(file: File, folderId?: string | null): Promise<Response> {
     const formData = new FormData()
     formData.append('file', file)
+    const params: Record<string, string> = {}
+    if (folderId) {
+      params.folder_id = folderId
+    }
     return this.api().post('/files', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      params,
     })
   }
 

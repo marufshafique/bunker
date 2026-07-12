@@ -15,6 +15,10 @@ import {
 } from '@/components/ui/dialog'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 
+const props = defineProps<{
+  folderId?: string
+}>()
+
 const fileRepo = useDriveFileRepo()
 const folderRepo = useFolderRepo()
 
@@ -34,7 +38,7 @@ async function submitFolder() {
   }
 
   try {
-    await folderRepo.create({ name })
+    await folderRepo.create({ name, folder_id: props.folderId ?? null })
     toast('Folder created', {
       description: `"${name}" has been created.`,
     })
@@ -58,7 +62,7 @@ async function onFileChange(e: Event) {
   let count = 0
   for (const file of target.files) {
     try {
-      await fileRepo.upload(file)
+      await fileRepo.upload(file, props.folderId ?? null)
       count++
     } catch {
       toast('Error', {

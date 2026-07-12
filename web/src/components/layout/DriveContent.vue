@@ -2,112 +2,29 @@
 import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import {
-  Folder,
-  File,
-  Image,
-  FileText,
-  Trash2,
-  CloudOff,
-  File as FilePdf,
-} from '@lucide/vue'
-import { Button } from '@/components/ui/button'
+import { CloudOff } from '@lucide/vue'
 import { useDriveFileRepo } from '@/stores/orm'
+import type { DriveItem } from '@/types/drive'
+import DriveFolderItem from '@/components/layout/DriveFolderItem.vue'
+import DriveFileItem from '@/components/layout/DriveFileItem.vue'
 
-// ─── types ───
-export interface DriveItem {
-  id: string
-  name: string
-  isFolder: boolean
-  size: number
-  createdAt: number
-}
+const viewMode = useStorage<'grid' | 'list'>(
+  'drive-view-mode',
+  'grid',
+)
 
-const viewMode = useStorage<'grid' | 'list'>('drive-view-mode', 'grid')
-
-defineProps<{
+const props = defineProps<{
   items: DriveItem[]
   searchQuery: string
+  folderId?: string
 }>()
 
 const fileRepo = useDriveFileRepo()
 
 const emit = defineEmits<{
   (e: 'delete-item', id: string): void
+  (e: 'click-item', id: string, isFolder: boolean): void
 }>()
-
-// ─── helpers ───
-function getIconType(name: string, isFolder: boolean) {
-  if (isFolder) return 'folder'
-  const ext = name.split('.').pop()?.toLowerCase() ?? ''
-  if (
-    [
-      'png',
-      'jpg',
-      'jpeg',
-      'gif',
-      'svg',
-      'webp',
-      'bmp',
-      'ico',
-    ].includes(ext)
-  )
-    return 'image'
-  if (['pdf'].includes(ext)) return 'pdf'
-  if (['doc', 'docx', 'txt', 'rtf', 'md'].includes(ext)) return 'doc'
-  return 'file'
-}
-
-function formatDate(ts: number): string {
-  const d = new Date(ts)
-  const now = new Date()
-  const opts: Intl.DateTimeFormatOptions = {
-    month: 'short',
-    day: 'numeric',
-  }
-  if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric'
-  return d.toLocaleDateString('en-US', opts)
-}
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return '—'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return (
-    parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-  )
-}
-
-function iconComponent(type: string) {
-  switch (type) {
-    case 'folder':
-      return Folder
-    case 'image':
-      return Image
-    case 'pdf':
-      return FilePdf
-    case 'doc':
-      return FileText
-    default:
-      return File
-  }
-}
-
-function iconBgColor(type: string): string {
-  switch (type) {
-    case 'folder':
-      return 'bg-amber-100 text-amber-700'
-    case 'image':
-      return 'bg-red-100 text-red-700'
-    case 'pdf':
-      return 'bg-red-100 text-red-700'
-    case 'doc':
-      return 'bg-green-100 text-green-700'
-    default:
-      return 'bg-blue-100 text-blue-700'
-  }
-}
 
 // ─── drag & drop ───
 const isDragging = ref(false)
@@ -126,7 +43,7 @@ async function onDrop(e: DragEvent) {
   let count = 0
   for (const file of e.dataTransfer.files) {
     try {
-      await fileRepo.upload(file)
+      await fileRepo.upload(file, props.folderId ?? null)
       count++
     } catch {
       toast('Error', {
@@ -178,68 +95,21 @@ async function onDrop(e: DragEvent) {
           : 'grid-cols-1 gap-0.5'
       "
     >
-      <div
-        v-for="item in items"
+      <DriveFolderItem
+        v-for="item in items.filter((i) => i.isFolder)"
         :key="item.id"
-        class="group rounded-2xl border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:-translate-y-0.5 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
-        :class="
-          viewMode === 'list'
-            ? 'flex items-center gap-4 !rounded-xl !px-[18px] !py-3'
-            : 'flex flex-col items-start'
-        "
-      >
-        <!-- Icon -->
-        <div
-          class="flex shrink-0 items-center justify-center rounded-xl"
-          :class="[
-            iconBgColor(getIconType(item.name, item.isFolder)),
-            viewMode === 'list'
-              ? 'size-9 text-xl'
-              : 'mb-3 size-12 text-[28px]',
-          ]"
-        >
-          <component
-            :is="iconComponent(getIconType(item.name, item.isFolder))"
-            :class="viewMode === 'list' ? 'size-5' : 'size-7'"
-          />
-        </div>
-
-        <!-- Name -->
-        <div
-          class="mb-1 w-full truncate text-sm font-medium text-[#1e1e1e]"
-          :class="{ '!mb-0 flex-1': viewMode === 'list' }"
-          :title="item.name"
-        >
-          {{ item.name }}
-        </div>
-
-        <!-- Meta -->
-        <div
-          class="flex w-full justify-between text-xs text-[#5f6368]"
-          :class="{ '!w-auto gap-6': viewMode === 'list' }"
-        >
-          <span>{{
-            item.isFolder ? '—' : formatSize(item.size)
-          }}</span>
-          <span>{{ formatDate(item.createdAt) }}</span>
-        </div>
-
-        <!-- Delete action -->
-        <div
-          class="mt-2.5 flex gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-          :class="{ '!mt-0 !opacity-100': viewMode === 'list' }"
-        >
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            class="rounded-xl bg-[#f1f3f6] text-[#5f6368] hover:bg-[#e8eaed] hover:text-[#1e1e1e]"
-            title="Delete"
-            @click="emit('delete-item', item.id)"
-          >
-            <Trash2 class="size-4" />
-          </Button>
-        </div>
-      </div>
+        :item="item"
+        :view-mode="viewMode"
+        @click-item="(id) => emit('click-item', id, true)"
+        @delete-item="(id) => emit('delete-item', id)"
+      />
+      <DriveFileItem
+        v-for="item in items.filter((i) => !i.isFolder)"
+        :key="item.id"
+        :item="item"
+        :view-mode="viewMode"
+        @delete-item="(id) => emit('delete-item', id)"
+      />
     </div>
   </div>
 </template>
