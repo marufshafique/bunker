@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Cloud, FolderPlus, Upload, RefreshCw } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
+import type { Folder } from '@/models/Folder'
 
 const props = defineProps<{
   folderId?: string
@@ -38,7 +39,10 @@ async function submitFolder() {
   }
 
   try {
-    await folderRepo.create({ name, folder_id: props.folderId ?? null })
+    await folderRepo.create({
+      name,
+      folder_id: props.folderId ?? null,
+    })
     toast('Folder created', {
       description: `"${name}" has been created.`,
     })
@@ -55,6 +59,9 @@ function triggerUpload() {
   fileInput.value?.click()
 }
 
+const folder = computed<Folder>(() => {
+  return folderRepo.find(props.folderId ?? '') ?? ({} as Folder)
+})
 async function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement
   if (!target.files || target.files.length === 0) return
@@ -62,7 +69,7 @@ async function onFileChange(e: Event) {
   let count = 0
   for (const file of target.files) {
     try {
-      await fileRepo.upload(file, props.folderId ?? null)
+      await fileRepo.upload(file, folder.value.id, folder.value.name)
       count++
     } catch {
       toast('Error', {

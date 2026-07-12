@@ -3,10 +3,16 @@ use std::path::PathBuf;
 use actix_multipart::form::{MultipartForm, tempfile::TempFile};
 use actix_web::{
     HttpResponse, Responder, delete, get, post,
-    web::{self, Data},
+    web::{self, Data, Query},
 };
 use sqlx::{PgPool, types::chrono};
 use uuid;
+
+#[derive(serde::Deserialize, std::fmt::Debug)]
+pub struct FilesQuery {
+    folder_id: Option<uuid::Uuid>,
+    folder_name: Option<String>,
+}
 
 #[derive(MultipartForm)]
 pub struct FileForm {
@@ -27,25 +33,25 @@ pub struct FileRow {
 #[post("/files")]
 pub async fn upload_file(
     MultipartForm(form): MultipartForm<FileForm>,
+    Query(query): Query<FilesQuery>,
     db_pool: Data<PgPool>,
 ) -> impl Responder {
     log::info!("Received file: {:?}", form.file.file_name);
     let original_name = form
         .file
         .file_name
-        .clone()
         .unwrap_or_else(|| "unknown_file.bin".to_string());
 
     let id = uuid::Uuid::new_v4();
 
-    // Build storage path: uploads/{uuid}.{ext} so files with the same name don't collide
-    let ext = std::path::Path::new(&original_name)
-        .extension()
-        .and_then(|e| e.to_str())
-        .map(|e| format!(".{}", e))
-        .unwrap_or_default();
-    let storage_filename = format!("{}{}", id, ext);
-    let target_path = PathBuf::from("uploads").join(&storage_filename);
+    log::info!("Uploading file on folder: {:?}", query);
+    let target_path = if let Some(ref folder_name) = query.folder_name {
+        PathBuf::from("uploads")
+            .join(&folder_name)
+            .join(&original_name)
+    } else {
+        PathBuf::from("uploads").join(&original_name)
+    };
 
     form.file
         .file
@@ -64,20 +70,21 @@ pub async fn upload_file(
         mime_type: form.file.content_type.unwrap().to_string(),
         storage_path: target_path.to_string_lossy().to_string(),
         uploaded_at: chrono::Utc::now(),
-        folder_id: None,
+        folder_id: query.folder_id,
     };
 
     sqlx::query!(
         r#"
-        INSERT INTO files (id, original_name, storage_path, file_size_bytes, mime_type, uploaded_at)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO files (id, original_name, storage_path, file_size_bytes, mime_type, uploaded_at, folder_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         "#,
         res.id,
         res.original_name,
         res.storage_path,
         res.file_size_bytes as i64,
         res.mime_type,
-        res.uploaded_at
+        res.uploaded_at,
+        res.folder_id
     )
     .execute(db_pool.get_ref())
     .await
@@ -87,8 +94,19 @@ pub async fn upload_file(
 }
 
 #[get("/files")]
-pub async fn list_files(db_pool: web::Data<PgPool>) -> impl Responder {
-    let files = sqlx::query_as!(FileRow, "SELECT * from files")
+pub async fn list_files(
+    Query(params): Query<FilesQuery>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let mut builder = sqlx::QueryBuilder::new("SELECT * FROM files");
+    if let Some(ref folder_id) = params.folder_id {
+        builder.push(" WHERE folder_id = ");
+        builder.push_bind(folder_id);
+    } else {
+        builder.push(" WHERE folder_id IS NULL");
+    }
+    let files = builder
+        .build_query_as::<FileRow>()
         .fetch_all(db_pool.get_ref())
         .await
         .expect("Failed to fetch files from the database");
@@ -121,13 +139,11 @@ pub async fn delete_file(id: web::Path<uuid::Uuid>, db_pool: web::Data<PgPool>) 
         None => return HttpResponse::NotFound().body("File not found"),
     };
 
-    // Delete the physical file from disk
     let storage_path = PathBuf::from(&file.storage_path);
     if storage_path.exists() {
         std::fs::remove_file(&storage_path).expect("Failed to delete file from storage");
     }
 
-    // Delete the database record
     sqlx::query!("DELETE FROM files WHERE id = $1", *id)
         .execute(db_pool.get_ref())
         .await

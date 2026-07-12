@@ -33,8 +33,7 @@ pub async fn create_folder(
 ) -> impl Responder {
     let id = uuid::Uuid::new_v4();
 
-    // Create the physical folder inside uploads/
-    let folder_path = PathBuf::from("uploads").join(id.to_string());
+    let folder_path = PathBuf::from("uploads").join(&body.name);
     std::fs::create_dir_all(&folder_path).expect("Failed to create folder directory");
 
     let folder = FolderRow {

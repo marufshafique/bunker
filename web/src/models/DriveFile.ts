@@ -10,6 +10,7 @@ export class DriveFile extends Model {
   declare file_size_bytes: number
   declare mime_type: string
   declare uploaded_at: string
+  declare folder_id?: string | null
 
   static fields() {
     return {
@@ -19,6 +20,7 @@ export class DriveFile extends Model {
       file_size_bytes: this.number(0),
       mime_type: this.string(''),
       uploaded_at: this.string(''),
+      folder_id: this.string(null),
     }
   }
 

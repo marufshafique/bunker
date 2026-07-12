@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Trash2 } from '@lucide/vue'
 import DriveHeader from '@/components/layout/DriveHeader.vue'
@@ -14,7 +14,6 @@ const router = useRouter()
 
 const fileRepo = useDriveFileRepo()
 const folderRepo = useFolderRepo()
-const route = useRoute()
 
 const searchQuery = ref('')
 const folderName = ref('')
@@ -23,10 +22,8 @@ const filteredItems = computed<DriveItem[]>(() => {
   const q = searchQuery.value.trim().toLowerCase()
 
   const all: DriveItem[] = [
-    ...folderRepo
-      .foldersById(route.params.id as string)
-      .map((f) => f.toDriveItem()),
-    ...fileRepo.all().map((f) => f.toDriveItem()),
+    ...folderRepo.foldersById(props.id).map((f) => f.toDriveItem()),
+    ...fileRepo.filesByFolderId(props.id).map((f) => f.toDriveItem()),
   ]
 
   if (!q) {
