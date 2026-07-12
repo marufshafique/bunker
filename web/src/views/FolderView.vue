@@ -29,7 +29,9 @@ const filteredItems = computed<DriveItem[]>(() => {
     ...fileRepo.all().map((f) => f.toDriveItem()),
   ]
 
-  if (!q) return all
+  if (!q) {
+    return all
+  }
 
   return all.filter((it) => it.name.toLowerCase().includes(q))
 })
@@ -67,6 +69,7 @@ async function deleteItem(id: string) {
   }
 
   const folder = folderRepo.find(id)
+
   if (folder) {
     const name = folder.name
     try {
@@ -113,6 +116,7 @@ watch(() => props.id, loadFolder)
         >
           ← My Drive
         </button>
+
         <span class="text-[#d1d5db]">/</span>
         <span class="truncate text-sm font-medium text-[#1a1a1a]">
           {{ folderName }}
