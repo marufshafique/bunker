@@ -27,10 +27,10 @@ function formatDate(ts: number): string {
 
 <template>
   <div
-    class="group rounded-2xl border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:-translate-y-0.5 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] cursor-pointer"
+    class="group cursor-pointer rounded-md border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
     :class="
       viewMode === 'list'
-        ? 'flex items-center gap-4 !rounded-xl !px-[18px] !py-3'
+        ? 'flex items-center gap-4 rounded-md px-[18px] py-3'
         : 'flex flex-col items-start'
     "
     @click="emit('click-item', item.id)"
@@ -50,7 +50,7 @@ function formatDate(ts: number): string {
     <!-- Name -->
     <div
       class="mb-1 w-full truncate text-sm font-medium text-[#1e1e1e]"
-      :class="{ '!mb-0 flex-1': viewMode === 'list' }"
+      :class="{ 'mb-0! flex-1': viewMode === 'list' }"
       :title="item.name"
     >
       {{ item.name }}
@@ -59,7 +59,7 @@ function formatDate(ts: number): string {
     <!-- Meta -->
     <div
       class="flex w-full justify-between text-xs text-[#5f6368]"
-      :class="{ '!w-auto gap-6': viewMode === 'list' }"
+      :class="{ 'w-auto! gap-6': viewMode === 'list' }"
     >
       <span>—</span>
       <span>{{ formatDate(item.createdAt) }}</span>
@@ -68,7 +68,7 @@ function formatDate(ts: number): string {
     <!-- Delete action -->
     <div
       class="mt-2.5 flex gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-      :class="{ '!mt-0 !opacity-100': viewMode === 'list' }"
+      :class="{ 'mt-0! opacity-100!': viewMode === 'list' }"
     >
       <Button
         variant="ghost"

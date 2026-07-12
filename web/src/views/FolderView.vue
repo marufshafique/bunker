@@ -91,6 +91,16 @@ function onClickItem(id: string, isFolder: boolean) {
   }
 }
 
+async function downloadItem(id: string, name: string) {
+  try {
+    await fileRepo.download(id, name)
+  } catch {
+    toast('Error', {
+      description: `Failed to download "${name}".`,
+    })
+  }
+}
+
 function goBack() {
   router.push({ name: 'home' })
 }
@@ -130,6 +140,7 @@ watch(() => props.id, loadFolder)
         :folder-id="id"
         @delete-item="deleteItem"
         @click-item="onClickItem"
+        @download-item="downloadItem"
       />
     </div>
   </div>

@@ -73,6 +73,16 @@ function onClickItem(id: string, isFolder: boolean) {
   }
 }
 
+async function downloadItem(id: string, name: string) {
+  try {
+    await fileRepo.download(id, name)
+  } catch {
+    toast('Error', {
+      description: `Failed to download "${name}".`,
+    })
+  }
+}
+
 onMounted(() => {
   Promise.all([fileRepo.list(), folderRepo.list()]).catch(() => {
     toast('Error', {
@@ -96,6 +106,7 @@ onMounted(() => {
         :search-query="searchQuery"
         @delete-item="deleteItem"
         @click-item="onClickItem"
+        @download-item="downloadItem"
       />
     </div>
   </div>

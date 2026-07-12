@@ -24,6 +24,7 @@ const fileRepo = useDriveFileRepo()
 const emit = defineEmits<{
   (e: 'delete-item', id: string): void
   (e: 'click-item', id: string, isFolder: boolean): void
+  (e: 'download-item', id: string, name: string): void
 }>()
 
 // ─── drag & drop ───
@@ -110,6 +111,7 @@ async function onDrop(e: DragEvent) {
         :item="item"
         :view-mode="viewMode"
         @delete-item="(id) => emit('delete-item', id)"
+        @download-item="(id, name) => emit('download-item', id, name)"
       />
     </div>
   </div>

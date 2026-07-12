@@ -1,6 +1,21 @@
 <script setup lang="ts">
-import { File, Image, FileText, File as FilePdf, Trash2 } from '@lucide/vue'
+import { ref } from 'vue'
+import {
+  File,
+  Image,
+  FileText,
+  File as FilePdf,
+  MoreVertical,
+  Download,
+  Trash2,
+} from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import type { DriveItem } from '@/types/drive'
 
 const props = defineProps<{
@@ -10,7 +25,18 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete-item', id: string): void
+  (e: 'download-item', id: string, name: string): void
 }>()
+
+const open = ref(false)
+
+function handleDownload() {
+  emit('download-item', props.item.id, props.item.name)
+}
+
+function handleDelete() {
+  emit('delete-item', props.item.id)
+}
 
 // ─── helpers ───
 function getIconType(name: string): string {
@@ -86,10 +112,10 @@ const iconType = getIconType(props.item.name)
 
 <template>
   <div
-    class="group rounded-2xl border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:-translate-y-0.5 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+    class="group rounded-md border border-[#f0f2f4] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] transition-all duration-150 hover:border-[#d1d5db] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
     :class="
       viewMode === 'list'
-        ? 'flex items-center gap-4 !rounded-xl !px-[18px] !py-3'
+        ? 'flex items-center gap-4 rounded-md! px-[18px]! py-3!'
         : 'flex flex-col items-start'
     "
   >
@@ -112,7 +138,7 @@ const iconType = getIconType(props.item.name)
     <!-- Name -->
     <div
       class="mb-1 w-full truncate text-sm font-medium text-[#1e1e1e]"
-      :class="{ '!mb-0 flex-1': viewMode === 'list' }"
+      :class="{ 'mb-0! flex-1': viewMode === 'list' }"
       :title="item.name"
     >
       {{ item.name }}
@@ -121,26 +147,43 @@ const iconType = getIconType(props.item.name)
     <!-- Meta -->
     <div
       class="flex w-full justify-between text-xs text-[#5f6368]"
-      :class="{ '!w-auto gap-6': viewMode === 'list' }"
+      :class="{ 'w-auto! gap-6': viewMode === 'list' }"
     >
       <span>{{ formatSize(item.size) }}</span>
       <span>{{ formatDate(item.createdAt) }}</span>
     </div>
 
-    <!-- Delete action -->
+    <!-- Actions dropdown -->
     <div
-      class="mt-2.5 flex gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-      :class="{ '!mt-0 !opacity-100': viewMode === 'list' }"
+      class="relative mt-2.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+      :class="{ 'mt-0! opacity-100!': viewMode === 'list' }"
     >
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        class="rounded-xl bg-[#f1f3f6] text-[#5f6368] hover:bg-[#e8eaed] hover:text-[#1e1e1e]"
-        title="Delete"
-        @click.stop="emit('delete-item', item.id)"
-      >
-        <Trash2 class="size-4" />
-      </Button>
+      <DropdownMenu v-model:open="open">
+        <DropdownMenuTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            class="rounded-xl bg-[#f1f3f6] text-[#5f6368] hover:bg-[#e8eaed] hover:text-[#1e1e1e]"
+            title="More actions"
+          >
+            <MoreVertical class="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent @click.stop>
+          <DropdownMenuItem @click="handleDownload">
+            <Download class="text-[#5f6368]" />
+            Download
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            class="text-red-600 focus:bg-red-50 focus:text-red-700"
+            @click="handleDelete"
+          >
+            <Trash2 />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   </div>
 </template>
