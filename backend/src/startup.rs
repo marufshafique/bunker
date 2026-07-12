@@ -4,7 +4,10 @@ use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use sqlx::PgPool;
 
-use crate::{delete_file, download_file, get_file, list_files, upload_file};
+use crate::{
+    create_folder, delete_file, delete_folder, download_file, get_file, get_folder, get_folders,
+    list_files, upload_file,
+};
 
 pub async fn run(lst: TcpListener, db_pool: PgPool) {
     let db_pool = web::Data::new(db_pool);
@@ -12,12 +15,16 @@ pub async fn run(lst: TcpListener, db_pool: PgPool) {
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::permissive())
+            .app_data(db_pool.clone())
             .service(upload_file)
             .service(list_files)
             .service(get_file)
             .service(delete_file)
             .service(download_file)
-            .app_data(db_pool.clone())
+            .service(create_folder)
+            .service(get_folders)
+            .service(get_folder)
+            .service(delete_folder)
     })
     .listen(lst)
     .expect("Failed to bind to address")
