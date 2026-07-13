@@ -53,9 +53,12 @@ pub async fn upload_file(
         PathBuf::from("uploads").join(&original_name)
     };
 
-    form.file
-        .file
-        .persist(&target_path)
+    // Use copy instead of persist() to avoid "cross-device link" errors
+    // when /tmp and the uploads volume are on different filesystems (Docker).
+    if let Some(parent) = target_path.parent() {
+        std::fs::create_dir_all(parent).expect("Failed to create upload directory");
+    }
+    std::fs::copy(form.file.file.path(), &target_path)
         .expect("Failed to save the uploaded file");
     if let Some(file_type) = &form.file.content_type {
         log::info!("File content type: {}", file_type.to_string());

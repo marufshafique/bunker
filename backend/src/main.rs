@@ -10,7 +10,7 @@ async fn main() {
     let config = get_config().expect("Failed to load configuration");
     log::info!("Configuration loaded successfully!");
     let lst =
-        TcpListener::bind(format!("127.0.0.1:{}", config.port)).expect("Failed to bind to address");
+        TcpListener::bind(format!("0.0.0.0:{}", config.port)).expect("Failed to bind to address");
 
     log::info!("Connecting to the database");
     let db_pool = PgPool::connect(&config.database.db_url())
