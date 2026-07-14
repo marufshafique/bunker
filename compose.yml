@@ -1,15 +1,9 @@
-# ─── Docker Compose ─────────────────────────────────────────────
-# Start everything:
-#   docker compose up --build
-#
 # Services:
-#   db       → PostgreSQL  (port 5434 on host)
-#   backend  → Rust/Actix  (port 7000 on host)
+#   db       → PostgreSQL  (internal only — not published to host)
+#   backend  → Rust/Actix  (port 6010 on host)
 #   frontend → Vue (nginx)  (port 5173 on host)
 
 services:
-
-  # ── PostgreSQL ───────────────────────────────────────────────
   db:
     image: postgres:17-alpine
     restart: unless-stopped
@@ -17,8 +11,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: bunker
-    ports:
-      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -27,7 +19,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # ── Backend (Rust + Actix-web) ───────────────────────────────
   backend:
     build:
       context: ./backend
@@ -37,9 +28,9 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "7000:7000"
+      - "6010:6010"
     environment:
-      PORT: "7000"
+      PORT: "6010"
       STORAGE_PATH: "/app/uploads"
       DATABASE__HOST: db
       DATABASE__PORT: "5432"
@@ -50,16 +41,17 @@ services:
     volumes:
       - uploads:/app/uploads
 
-  # ── Frontend (Vite dev server with HMR) ──────────────────────
   frontend:
     build:
       context: ./web
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:6010}
     restart: unless-stopped
     depends_on:
       - backend
     ports:
-      - "5173:80"
+      - "6011:80"
 
 volumes:
   pgdata:

@@ -9,7 +9,7 @@ export { useRepo } from 'pinia-orm'
 
 /** Shared axios instance used by the ORM axios plugin. */
 const http = axios.create({
-  baseURL: 'http://localhost:7000',
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:6010',
   headers: {
     'Content-Type': 'application/json',
   },

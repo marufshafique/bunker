@@ -2,7 +2,7 @@ port: 7000
 storage_path: "uploads"
 database:
   host: "127.0.0.1"
-  port: 5434
+  port: 5432
   username: "postgres"
   password: "password"
   database_name: "bunker"

@@ -6,6 +6,12 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
+
+# Injected from compose.yml (build.args). Vite bakes VITE_* vars into the
+# static bundle at build time, so this must be present before `npm run build`.
+# An actual env var takes precedence over any committed .env file.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ─── Stage 2: Serve ────────────────────────────────────────────

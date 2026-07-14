@@ -11,6 +11,10 @@ RUN rm -rf src
 
 COPY src ./src
 COPY .sqlx ./.sqlx
+# Docker COPY preserves the source files' original mtimes, which can be older
+# than the dummy dependency-cache build above. Touch them so cargo's mtime-based
+# fingerprinting rebuilds the real crate instead of reusing the empty stub.
+RUN find src -name '*.rs' -exec touch {} +
 ENV SQLX_OFFLINE=true
 RUN cargo build --release
 
