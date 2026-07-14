@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: bunker
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ${HOME}/Bunker/pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d bunker"]
       interval: 3s
@@ -39,7 +39,7 @@ services:
       DATABASE__DATABASE_NAME: bunker
       RUST_LOG: info
     volumes:
-      - uploads:/app/uploads
+      - ${HOME}/Bunker:/app/uploads
 
   frontend:
     build:
