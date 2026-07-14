@@ -18,5 +18,5 @@ async fn main() {
         .expect("Failed to connect to the database");
     log::info!("Database connection established successfully!");
 
-    run(lst, db_pool).await;
+    run(lst, db_pool, config.storage_path).await;
 }

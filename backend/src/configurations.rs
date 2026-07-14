@@ -1,4 +1,13 @@
+use std::path::PathBuf;
+
 use config::{Config, ConfigError};
+
+/// Shared, request-accessible storage configuration. Holds the base directory
+/// (from `STORAGE_PATH`) under which all uploaded files and folders are stored.
+#[derive(Clone)]
+pub struct StorageConfig {
+    pub base_path: PathBuf,
+}
 
 #[derive(serde::Deserialize)]
 pub struct Settings {

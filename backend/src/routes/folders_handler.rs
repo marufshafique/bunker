@@ -1,11 +1,11 @@
-use std::path::PathBuf;
-
 use actix_web::{
     HttpResponse, Responder, delete, get, post,
     web::{Data, Json, Path, Query},
 };
 use sqlx::{PgPool, types::chrono};
 use uuid;
+
+use crate::StorageConfig;
 
 #[derive(serde::Deserialize)]
 pub struct CreateFolderRequest {
@@ -30,10 +30,11 @@ pub struct FolderRow {
 pub async fn create_folder(
     Json(body): Json<CreateFolderRequest>,
     db_pool: Data<PgPool>,
+    storage: Data<StorageConfig>,
 ) -> impl Responder {
     let id = uuid::Uuid::new_v4();
 
-    let folder_path = PathBuf::from("uploads").join(&body.name);
+    let folder_path = storage.base_path.join(&body.name);
     std::fs::create_dir_all(&folder_path).expect("Failed to create folder directory");
 
     let folder = FolderRow {

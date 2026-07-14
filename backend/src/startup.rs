@@ -1,21 +1,26 @@
 use std::net::TcpListener;
+use std::path::PathBuf;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use sqlx::PgPool;
 
 use crate::{
-    create_folder, delete_file, delete_folder, download_file, get_file, get_folder, get_folders,
-    list_files, upload_file,
+    StorageConfig, create_folder, delete_file, delete_folder, download_file, get_file, get_folder,
+    get_folders, list_files, upload_file,
 };
 
-pub async fn run(lst: TcpListener, db_pool: PgPool) {
+pub async fn run(lst: TcpListener, db_pool: PgPool, storage_path: String) {
     let db_pool = web::Data::new(db_pool);
+    let storage = web::Data::new(StorageConfig {
+        base_path: PathBuf::from(storage_path),
+    });
 
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::permissive())
             .app_data(db_pool.clone())
+            .app_data(storage.clone())
             .service(upload_file)
             .service(list_files)
             .service(get_file)

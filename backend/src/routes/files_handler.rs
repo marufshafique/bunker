@@ -8,6 +8,8 @@ use actix_web::{
 use sqlx::{PgPool, types::chrono};
 use uuid;
 
+use crate::StorageConfig;
+
 #[derive(serde::Deserialize, std::fmt::Debug)]
 pub struct FilesQuery {
     folder_id: Option<uuid::Uuid>,
@@ -35,6 +37,7 @@ pub async fn upload_file(
     MultipartForm(form): MultipartForm<FileForm>,
     Query(query): Query<FilesQuery>,
     db_pool: Data<PgPool>,
+    storage: Data<StorageConfig>,
 ) -> impl Responder {
     log::info!("Received file: {:?}", form.file.file_name);
     let original_name = form
@@ -46,11 +49,9 @@ pub async fn upload_file(
 
     log::info!("Uploading file on folder: {:?}", query);
     let target_path = if let Some(ref folder_name) = query.folder_name {
-        PathBuf::from("uploads")
-            .join(&folder_name)
-            .join(&original_name)
+        storage.base_path.join(&folder_name).join(&original_name)
     } else {
-        PathBuf::from("uploads").join(&original_name)
+        storage.base_path.join(&original_name)
     };
 
     // Use copy instead of persist() to avoid "cross-device link" errors
