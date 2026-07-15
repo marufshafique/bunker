@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Cloud } from '@lucide/vue'
 import { useFolderRepo } from '@/stores/orm'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -10,9 +10,12 @@ const props = defineProps<{
 
 const router = useRouter()
 
-const route = useRoute()
 const folder = computed(() => {
-  return useFolderRepo().find(route.params.id as string)
+  console.log('folderId', props.folderId)
+
+  return useFolderRepo()
+    .query()
+    .find(props.folderId as string)
 })
 
 function goBack() {

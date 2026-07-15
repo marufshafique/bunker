@@ -1,24 +1,26 @@
-import { AxiosRepository, type Response } from '@pinia-orm/axios'
+import { type Response } from '@pinia-orm/axios'
 import { Folder } from '@/models/Folder'
+import CachedRepository from './CachedRepository'
 
 export interface CreateFolderPayload {
   name: string
   folder_id?: string | null
 }
 
-export class FolderRepository extends AxiosRepository<Folder> {
+export class FolderRepository extends CachedRepository<Folder> {
   static useModel = Folder
 
   foldersById(folderId: string | null): Folder[] {
     return this.query().where('folder_id', folderId).get()
   }
 
-  async list(folderId?: string | null): Promise<Response> {
-    const params: Record<string, string> = {}
-    if (folderId) {
-      params.folder_id = folderId
-    }
-    return this.api().get('/folders', { params })
+  async list(folderId?: string | null): Promise<Folder[]> {
+    const url = folderId ? `/folders/${folderId}` : '/folders'
+
+    return this.getCachedAll(
+      url,
+      `folders_list_${folderId ?? 'root'}`,
+    )
   }
 
   async get(id: string): Promise<Response> {

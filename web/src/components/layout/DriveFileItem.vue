@@ -23,6 +23,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer'
 import type { DriveItem } from '@/types/drive'
 
@@ -38,10 +39,6 @@ const emit = defineEmits<{
 
 const open = ref(false)
 const detailsOpen = ref(false)
-
-function openDetails() {
-  detailsOpen.value = true
-}
 
 function handleDownload() {
   emit('download-item', props.item.id, props.item.name)
@@ -134,19 +131,18 @@ const iconType = getIconType(props.item.name)
 </script>
 
 <template>
-  <div
-    class="group cursor-pointer rounded-md border border-border bg-card p-4 shadow-sm transition-all duration-150 hover:border-muted-foreground/30 hover:shadow-md"
-    :class="
-      viewMode === 'list'
-        ? 'flex items-center gap-4 rounded-md! px-4! py-3!'
-        : 'flex flex-col items-start'
-    "
-    role="button"
-    tabindex="0"
-    :title="item.name"
-    @click="openDetails"
-    @keydown.enter="openDetails"
-  >
+  <!-- File details drawer -->
+  <Drawer v-model:open="detailsOpen">
+    <DrawerTrigger as-child>
+      <div
+        class="group border-border bg-card hover:border-muted-foreground/30 cursor-pointer rounded-md border p-4 shadow-sm transition-all duration-150 hover:shadow-md"
+        :class="
+          viewMode === 'list'
+            ? 'flex items-center gap-4 rounded-md! px-4! py-3!'
+            : 'flex flex-col items-start'
+        "
+        :title="item.name"
+      >
     <!-- Icon -->
     <div
       class="flex shrink-0 items-center justify-center rounded-xl"
@@ -165,7 +161,7 @@ const iconType = getIconType(props.item.name)
 
     <!-- Name -->
     <div
-      class="mb-1 w-full truncate text-sm font-medium text-foreground"
+      class="text-foreground mb-1 w-full truncate text-sm font-medium"
       :class="{ 'mb-0! flex-1': viewMode === 'list' }"
       :title="item.name"
     >
@@ -174,7 +170,7 @@ const iconType = getIconType(props.item.name)
 
     <!-- Meta -->
     <div
-      class="flex w-full justify-between text-xs text-muted-foreground"
+      class="text-muted-foreground flex w-full justify-between text-xs"
       :class="{ 'w-auto! gap-6': viewMode === 'list' }"
     >
       <span>{{ formatSize(item.size) }}</span>
@@ -192,14 +188,14 @@ const iconType = getIconType(props.item.name)
           <Button
             variant="ghost"
             size="icon-xs"
-            class="rounded-xl bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+            class="bg-muted text-muted-foreground hover:bg-accent hover:text-foreground rounded-xl"
             title="More actions"
           >
             <MoreVertical class="size-4" />
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent @click.stop>
+        <DropdownMenuContent>
           <DropdownMenuItem @click="handleDownload">
             <Download class="text-muted-foreground" />
             Download
@@ -214,10 +210,8 @@ const iconType = getIconType(props.item.name)
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  </div>
-
-  <!-- File details drawer -->
-  <Drawer v-model:open="detailsOpen">
+      </div>
+    </DrawerTrigger>
     <DrawerContent>
       <div class="mx-auto w-full max-w-6xl">
         <DrawerHeader class="text-left">
@@ -226,10 +220,15 @@ const iconType = getIconType(props.item.name)
               class="flex size-11 shrink-0 items-center justify-center rounded-xl"
               :class="iconBgColor(iconType)"
             >
-              <component :is="iconComponent(iconType)" class="size-6" />
+              <component
+                :is="iconComponent(iconType)"
+                class="size-6"
+              />
             </div>
             <div class="min-w-0">
-              <DrawerTitle class="truncate">{{ item.name }}</DrawerTitle>
+              <DrawerTitle class="truncate">{{
+                item.name
+              }}</DrawerTitle>
               <DrawerDescription>File details</DrawerDescription>
             </div>
           </div>
@@ -237,24 +236,24 @@ const iconType = getIconType(props.item.name)
 
         <dl class="flex flex-col gap-1 px-4 pb-2 text-sm">
           <div
-            class="flex items-center justify-between gap-4 border-b border-border py-3"
+            class="border-border flex items-center justify-between gap-4 border-b py-3"
           >
             <dt class="text-muted-foreground">Name</dt>
-            <dd class="truncate font-medium text-foreground">
+            <dd class="text-foreground truncate font-medium">
               {{ item.name }}
             </dd>
           </div>
           <div
-            class="flex items-center justify-between gap-4 border-b border-border py-3"
+            class="border-border flex items-center justify-between gap-4 border-b py-3"
           >
             <dt class="text-muted-foreground">Size</dt>
-            <dd class="font-medium text-foreground">
+            <dd class="text-foreground font-medium">
               {{ formatSize(item.size) }}
             </dd>
           </div>
           <div class="flex items-center justify-between gap-4 py-3">
             <dt class="text-muted-foreground">Uploaded at</dt>
-            <dd class="font-medium text-foreground">
+            <dd class="text-foreground font-medium">
               {{ formatDateTime(item.createdAt) }}
             </dd>
           </div>
@@ -262,7 +261,7 @@ const iconType = getIconType(props.item.name)
 
         <DrawerFooter>
           <Button
-            class="h-11 gap-2 rounded-full bg-primary hover:bg-primary/80"
+            class="bg-primary hover:bg-primary/80 h-11 gap-2 rounded-full"
             @click="handleDownload"
           >
             <Download class="size-4" />

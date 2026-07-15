@@ -17,6 +17,9 @@ const http = axios.create({
 
 export const ormPlugin = createORM({
   plugins: [createPiniaOrmAxios({ axios: http })],
+  cache: {
+    shared: true,
+  },
 })
 
 export function useDriveFileRepo(pinia?: Pinia): DriveFileRepository {

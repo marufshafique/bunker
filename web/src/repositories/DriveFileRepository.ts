@@ -1,8 +1,9 @@
-import { AxiosRepository, type Response } from '@pinia-orm/axios'
+import { type Response } from '@pinia-orm/axios'
 import type { AxiosRequestConfig } from 'axios'
 import { DriveFile } from '@/models/DriveFile'
+import CachedRepository from './CachedRepository'
 
-export class DriveFileRepository extends AxiosRepository<DriveFile> {
+export class DriveFileRepository extends CachedRepository<DriveFile> {
   static useModel = DriveFile
 
   filesByFolderId(folderId: string | null): DriveFile[] {
@@ -11,12 +12,17 @@ export class DriveFileRepository extends AxiosRepository<DriveFile> {
       .get()
   }
 
-  async list(folderId?: string | null): Promise<Response> {
-    const params: Record<string, string> = {}
+  async list(folderId?: string | null): Promise<DriveFile[]> {
+    const params = new URLSearchParams()
+
     if (folderId) {
-      params.folder_id = folderId
+      params.append('folder_id', folderId)
     }
-    return this.api().get('/files', { params })
+
+    return this.getCachedAll(
+      `/files?${params.toString()}`,
+      `files_list_${folderId ?? 'root'}`,
+    )
   }
 
   async upload(
