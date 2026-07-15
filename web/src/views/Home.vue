@@ -6,6 +6,7 @@ import { Trash2 } from '@lucide/vue'
 import DriveHeader from '@/components/layout/DriveHeader.vue'
 import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
+import DriveQuickActions from '@/components/layout/DriveQuickActions.vue'
 import type { DriveItem } from '@/types/drive'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 
@@ -95,7 +96,7 @@ onMounted(() => {
 <template>
   <div class="bg-muted flex min-h-screen justify-center p-1">
     <div
-      class="bg-card flex max-h-screen min-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md shadow-2xl"
+      class="bg-card relative flex max-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md shadow-2xl"
     >
       <DriveHeader />
 
@@ -108,6 +109,8 @@ onMounted(() => {
         @click-item="onClickItem"
         @download-item="downloadItem"
       />
+
+      <DriveQuickActions />
     </div>
   </div>
 </template>
