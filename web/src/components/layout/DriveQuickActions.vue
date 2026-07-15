@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/drawer'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 import type { Folder } from '@/models/Folder'
+import { useRoute } from 'vue-router'
 
 const props = defineProps<{
   folderId?: string
@@ -34,8 +35,11 @@ const dialogOpen = ref(false)
 const folderName = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
+const route = useRoute()
 const folder = computed<Folder>(() => {
-  return folderRepo.find(props.folderId ?? '') ?? ({} as Folder)
+  const id = route.params.id as string
+
+  return folderRepo.find((id as string) ?? '') ?? ({} as Folder)
 })
 
 function openNewFolder() {
@@ -106,7 +110,7 @@ async function onFileChange(e: Event) {
   <!-- Floating action button (bottom-right) -->
   <Button
     size="icon"
-    class="absolute bottom-6 right-6 z-40 size-14 rounded-full bg-primary shadow-lg transition-transform hover:-translate-y-px hover:bg-primary/80 hover:shadow-xl [&_svg]:size-6"
+    class="bg-primary hover:bg-primary/80 absolute right-6 bottom-6 z-40 size-14 rounded-full shadow-lg transition-transform hover:-translate-y-px hover:shadow-xl [&_svg]:size-6"
     title="Create"
     @click="drawerOpen = true"
   >
@@ -127,19 +131,19 @@ async function onFileChange(e: Event) {
         <div class="flex flex-col gap-2 px-4 pb-8">
           <button
             type="button"
-            class="flex items-center gap-3.5 rounded-2xl border border-border bg-card px-4 py-4 text-left transition-colors hover:bg-accent"
+            class="border-border bg-card hover:bg-accent flex items-center gap-3.5 rounded-2xl border px-4 py-4 text-left transition-colors"
             @click="openNewFolder"
           >
             <span
-              class="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+              class="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full"
             >
               <FolderPlus class="size-5" />
             </span>
             <span>
-              <span class="block text-sm font-medium text-foreground">
+              <span class="text-foreground block text-sm font-medium">
                 New folder
               </span>
-              <span class="block text-xs text-muted-foreground">
+              <span class="text-muted-foreground block text-xs">
                 Create an empty folder here
               </span>
             </span>
@@ -147,19 +151,19 @@ async function onFileChange(e: Event) {
 
           <button
             type="button"
-            class="flex items-center gap-3.5 rounded-2xl border border-border bg-card px-4 py-4 text-left transition-colors hover:bg-accent"
+            class="border-border bg-card hover:bg-accent flex items-center gap-3.5 rounded-2xl border px-4 py-4 text-left transition-colors"
             @click="triggerUpload"
           >
             <span
-              class="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+              class="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full"
             >
               <Upload class="size-5" />
             </span>
             <span>
-              <span class="block text-sm font-medium text-foreground">
+              <span class="text-foreground block text-sm font-medium">
                 Upload file
               </span>
-              <span class="block text-xs text-muted-foreground">
+              <span class="text-muted-foreground block text-xs">
                 Upload one or more files
               </span>
             </span>
@@ -177,34 +181,35 @@ async function onFileChange(e: Event) {
     @change="onFileChange"
   />
 
-  <!-- New folder dialog (triggered from the drawer) -->
   <Dialog v-model:open="dialogOpen">
     <DialogContent class="rounded-2xl p-8 sm:max-w-md">
       <DialogHeader>
-        <DialogTitle class="flex items-center gap-2.5 text-xl font-semibold">
-          <FolderPlus class="size-7 text-primary" />
+        <DialogTitle
+          class="flex items-center gap-2.5 text-xl font-semibold"
+        >
+          <FolderPlus class="text-primary size-7" />
           New folder
         </DialogTitle>
-        <DialogDescription class="mt-1.5 text-muted-foreground">
+        <DialogDescription class="text-muted-foreground mt-1.5">
           Enter a name for your new folder.
         </DialogDescription>
       </DialogHeader>
       <Input
         v-model="folderName"
         placeholder="My folder"
-        class="h-11 rounded-2xl border-2 border-border bg-muted/40 text-sm focus-visible:border-primary focus-visible:bg-card focus-visible:ring-0"
+        class="border-border bg-muted/40 focus-visible:border-primary focus-visible:bg-card h-11 rounded-2xl border-2 text-sm focus-visible:ring-0"
         @keydown.enter="submitFolder"
       />
       <DialogFooter class="mt-6 gap-2.5">
         <Button
           variant="secondary"
-          class="h-10 rounded-full bg-muted px-6 text-foreground hover:bg-accent"
+          class="bg-muted text-foreground hover:bg-accent h-10 rounded-full px-6"
           @click="dialogOpen = false"
         >
           Cancel
         </Button>
         <Button
-          class="h-10 rounded-full bg-primary px-6 hover:bg-primary/80"
+          class="bg-primary hover:bg-primary/80 h-10 rounded-full px-6"
           @click="submitFolder"
         >
           Create
