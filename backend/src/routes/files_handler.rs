@@ -59,8 +59,7 @@ pub async fn upload_file(
     if let Some(parent) = target_path.parent() {
         std::fs::create_dir_all(parent).expect("Failed to create upload directory");
     }
-    std::fs::copy(form.file.file.path(), &target_path)
-        .expect("Failed to save the uploaded file");
+    std::fs::copy(form.file.file.path(), &target_path).expect("Failed to save the uploaded file");
     if let Some(file_type) = &form.file.content_type {
         log::info!("File content type: {}", file_type.to_string());
     } else {
