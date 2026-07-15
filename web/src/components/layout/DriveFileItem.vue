@@ -16,6 +16,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 import type { DriveItem } from '@/types/drive'
 
 const props = defineProps<{
@@ -29,6 +37,11 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
+const detailsOpen = ref(false)
+
+function openDetails() {
+  detailsOpen.value = true
+}
 
 function handleDownload() {
   emit('download-item', props.item.id, props.item.name)
@@ -68,6 +81,16 @@ function formatDate(ts: number): string {
   }
   if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric'
   return d.toLocaleDateString('en-US', opts)
+}
+
+function formatDateTime(ts: number): string {
+  return new Date(ts).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 function formatSize(bytes: number): string {
@@ -112,12 +135,17 @@ const iconType = getIconType(props.item.name)
 
 <template>
   <div
-    class="group rounded-md border border-border bg-card p-4 shadow-sm transition-all duration-150 hover:border-muted-foreground/30 hover:shadow-md"
+    class="group cursor-pointer rounded-md border border-border bg-card p-4 shadow-sm transition-all duration-150 hover:border-muted-foreground/30 hover:shadow-md"
     :class="
       viewMode === 'list'
         ? 'flex items-center gap-4 rounded-md! px-4! py-3!'
         : 'flex flex-col items-start'
     "
+    role="button"
+    tabindex="0"
+    :title="item.name"
+    @click="openDetails"
+    @keydown.enter="openDetails"
   >
     <!-- Icon -->
     <div
@@ -157,6 +185,7 @@ const iconType = getIconType(props.item.name)
     <div
       class="relative mt-2.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
       :class="{ 'mt-0! opacity-100!': viewMode === 'list' }"
+      @click.stop
     >
       <DropdownMenu v-model:open="open">
         <DropdownMenuTrigger as-child>
@@ -186,4 +215,61 @@ const iconType = getIconType(props.item.name)
       </DropdownMenu>
     </div>
   </div>
+
+  <!-- File details drawer -->
+  <Drawer v-model:open="detailsOpen">
+    <DrawerContent>
+      <div class="mx-auto w-full max-w-6xl">
+        <DrawerHeader class="text-left">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex size-11 shrink-0 items-center justify-center rounded-xl"
+              :class="iconBgColor(iconType)"
+            >
+              <component :is="iconComponent(iconType)" class="size-6" />
+            </div>
+            <div class="min-w-0">
+              <DrawerTitle class="truncate">{{ item.name }}</DrawerTitle>
+              <DrawerDescription>File details</DrawerDescription>
+            </div>
+          </div>
+        </DrawerHeader>
+
+        <dl class="flex flex-col gap-1 px-4 pb-2 text-sm">
+          <div
+            class="flex items-center justify-between gap-4 border-b border-border py-3"
+          >
+            <dt class="text-muted-foreground">Name</dt>
+            <dd class="truncate font-medium text-foreground">
+              {{ item.name }}
+            </dd>
+          </div>
+          <div
+            class="flex items-center justify-between gap-4 border-b border-border py-3"
+          >
+            <dt class="text-muted-foreground">Size</dt>
+            <dd class="font-medium text-foreground">
+              {{ formatSize(item.size) }}
+            </dd>
+          </div>
+          <div class="flex items-center justify-between gap-4 py-3">
+            <dt class="text-muted-foreground">Uploaded at</dt>
+            <dd class="font-medium text-foreground">
+              {{ formatDateTime(item.createdAt) }}
+            </dd>
+          </div>
+        </dl>
+
+        <DrawerFooter>
+          <Button
+            class="h-11 gap-2 rounded-full bg-primary hover:bg-primary/80"
+            @click="handleDownload"
+          >
+            <Download class="size-4" />
+            Download
+          </Button>
+        </DrawerFooter>
+      </div>
+    </DrawerContent>
+  </Drawer>
 </template>

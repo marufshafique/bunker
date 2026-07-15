@@ -104,3 +104,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * Prevent iOS Safari from auto-zooming when focusing a form control.
+ * iOS zooms whenever the focused field's font-size is below 16px, so on
+ * touch devices we pin text-entry controls to 16px. This is unlayered CSS,
+ * so it wins over Tailwind's `text-sm`/`text-base` utility classes without
+ * needing !important, and is scoped to coarse pointers to keep the smaller
+ * desktop sizing intact.
+ */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}

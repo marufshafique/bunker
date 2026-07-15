@@ -17,7 +17,6 @@ const fileRepo = useDriveFileRepo()
 const folderRepo = useFolderRepo()
 
 const searchQuery = ref('')
-const folderName = ref('')
 
 const filteredItems = computed<DriveItem[]>(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -36,8 +35,6 @@ const filteredItems = computed<DriveItem[]>(() => {
 
 async function loadFolder() {
   try {
-    const folder = await folderRepo.get(props.id)
-    folderName.value = folder.response?.data?.name ?? 'Folder'
     await Promise.all([
       fileRepo.list(props.id),
       folderRepo.list(props.id),
@@ -102,10 +99,6 @@ async function downloadItem(id: string, name: string) {
   }
 }
 
-function goBack() {
-  router.push({ name: 'home' })
-}
-
 onMounted(loadFolder)
 watch(() => props.id, loadFolder)
 </script>
@@ -115,22 +108,6 @@ watch(() => props.id, loadFolder)
     <div
       class="bg-card flex max-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md shadow-2xl"
     >
-      <header
-        class="border-border flex shrink-0 items-center gap-3 border-b px-6 py-2.5"
-      >
-        <button
-          class="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors"
-          @click="goBack"
-        >
-          ← My Drive
-        </button>
-
-        <span class="text-muted-foreground/50">/</span>
-        <span class="text-foreground truncate text-sm font-medium">
-          {{ folderName }}
-        </span>
-      </header>
-
       <DriveHeader :folder-id="id" />
 
       <DriveToolbar v-model:search-query="searchQuery" />

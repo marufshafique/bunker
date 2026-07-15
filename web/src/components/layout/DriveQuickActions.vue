@@ -182,7 +182,9 @@ async function onFileChange(e: Event) {
   />
 
   <Dialog v-model:open="dialogOpen">
-    <DialogContent class="rounded-2xl p-8 sm:max-w-md">
+    <DialogContent
+      class="top-8 translate-y-0 rounded-md p-8 sm:top-1/2 sm:max-w-md sm:-translate-y-1/2"
+    >
       <DialogHeader>
         <DialogTitle
           class="flex items-center gap-2.5 text-xl font-semibold"

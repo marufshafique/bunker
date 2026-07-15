@@ -1,25 +1,22 @@
 <script setup lang="ts">
-import { Cloud, RefreshCw } from '@lucide/vue'
-import { toast } from 'vue-sonner'
-import { Button } from '@/components/ui/button'
-import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
+import { Cloud } from '@lucide/vue'
+import { useFolderRepo } from '@/stores/orm'
+import { useRoute, useRouter } from 'vue-router'
+import { computed } from 'vue'
 
 const props = defineProps<{
   folderId?: string
 }>()
 
-const fileRepo = useDriveFileRepo()
-const folderRepo = useFolderRepo()
+const router = useRouter()
 
-async function refresh() {
-  try {
-    await Promise.all([fileRepo.list(), folderRepo.list()])
-    toast('Refreshed', { description: 'View is up to date.' })
-  } catch {
-    toast('Error', {
-      description: 'Failed to refresh from the server.',
-    })
-  }
+const route = useRoute()
+const folder = computed(() => {
+  return useFolderRepo().find(route.params.id as string)
+})
+
+function goBack() {
+  router.push({ name: 'home' })
 }
 </script>
 
@@ -30,24 +27,26 @@ async function refresh() {
     <div
       class="text-foreground flex items-center gap-2.5 text-xl font-semibold tracking-tight"
     >
-      <Cloud class="text-primary size-7" />
+      <Cloud class="text-primary size-8" />
       <span
-        class="from-primary to-primary/80 bg-gradient-to-br bg-clip-text text-transparent"
+        class="from-primary to-primary/80 bg-linear-to-br bg-clip-text text-transparent"
       >
         Drive
       </span>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2.5">
-      <Button
-        variant="secondary"
-        size="icon"
-        class="bg-muted hover:bg-accent size-9 rounded-full"
-        title="Refresh"
-        @click="refresh"
+    <div v-if="folder?.name" class="flex shrink-0 items-center gap-2">
+      <button
+        class="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors"
+        @click="goBack"
       >
-        <RefreshCw />
-      </Button>
+        ← My Drive
+      </button>
+
+      <span class="text-muted-foreground/50">/</span>
+      <span class="text-foreground truncate text-sm font-medium">
+        {{ folder?.name }}
+      </span>
     </div>
   </header>
 </template>
