@@ -65,7 +65,7 @@ async function submitFolder() {
   try {
     await folderRepo.create({
       name,
-      folder_id: props.folderId ?? null,
+      folder_id: folder.value.id,
     })
     toast('Folder created', {
       description: `"${name}" has been created.`,
