@@ -6,6 +6,7 @@ import { Trash2 } from '@lucide/vue'
 import DriveHeader from '@/components/layout/DriveHeader.vue'
 import DriveToolbar from '@/components/layout/DriveToolbar.vue'
 import DriveContent from '@/components/layout/DriveContent.vue'
+import DriveQuickActions from '@/components/layout/DriveQuickActions.vue'
 import type { DriveItem } from '@/types/drive'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 
@@ -110,22 +111,22 @@ watch(() => props.id, loadFolder)
 </script>
 
 <template>
-  <div class="flex min-h-screen justify-center bg-muted p-1">
+  <div class="bg-muted flex min-h-screen justify-center p-1">
     <div
-      class="flex max-h-screen min-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md bg-card shadow-2xl"
+      class="bg-card flex max-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-md shadow-2xl"
     >
       <header
-        class="flex shrink-0 items-center gap-3 border-b border-border px-6 py-2.5"
+        class="border-border flex shrink-0 items-center gap-3 border-b px-6 py-2.5"
       >
         <button
-          class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          class="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors"
           @click="goBack"
         >
           ← My Drive
         </button>
 
         <span class="text-muted-foreground/50">/</span>
-        <span class="truncate text-sm font-medium text-foreground">
+        <span class="text-foreground truncate text-sm font-medium">
           {{ folderName }}
         </span>
       </header>
@@ -143,5 +144,7 @@ watch(() => props.id, loadFolder)
         @download-item="downloadItem"
       />
     </div>
+
+    <DriveQuickActions />
   </div>
 </template>
