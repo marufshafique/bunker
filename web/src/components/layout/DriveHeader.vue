@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const router = useRouter()
 
+const version = __APP_VERSION__
+
 const folder = computed(() => {
   console.log('folderId', props.folderId)
 
@@ -35,6 +37,9 @@ function goBack() {
         class="from-primary to-primary/80 bg-linear-to-br bg-clip-text text-transparent"
       >
         Drive
+      </span>
+      <span class="text-muted-foreground text-xs font-normal">
+        v{{ version }}
       </span>
     </div>
 
