@@ -4,6 +4,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { ormPlugin } from '@/stores/orm'
+import { registerServiceWorker } from '@/registerServiceWorker'
 
 const app = createApp(App)
 
@@ -13,3 +14,5 @@ app.use(pinia)
 
 app.use(router)
 app.mount('#app')
+
+registerServiceWorker()

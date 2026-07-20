@@ -84,12 +84,14 @@ async function downloadItem(id: string, name: string) {
   }
 }
 
-onMounted(() => {
-  Promise.all([fileRepo.list(), folderRepo.list()]).catch(() => {
+onMounted(async () => {
+  try {
+    await Promise.all([fileRepo.list(), folderRepo.list()])
+  } catch (err) {
     toast('Error', {
       description: 'Failed to load files from the server.',
     })
-  })
+  }
 })
 </script>
 
