@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Plus, FolderPlus, Upload } from '@lucide/vue'
+import { Plus, FolderPlus, Upload, LoaderCircle } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import DriveUploadingDrawer from '@/components/layout/DriveUploadingDrawer.vue'
+import type { UploadingFile } from '@/components/layout/DriveUploadingDrawer.vue'
 import { useDriveFileRepo, useFolderRepo } from '@/stores/orm'
 import type { Folder } from '@/models/Folder'
 import { useRoute } from 'vue-router'
@@ -34,6 +36,21 @@ const drawerOpen = ref(false)
 const dialogOpen = ref(false)
 const folderName = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
+
+// Files being uploaded (kept in the list with their live status).
+const uploadingFiles = ref<UploadingFile[]>([])
+const uploadingCount = computed(
+  () =>
+    uploadingFiles.value.filter((f) => f.status === 'uploading')
+      .length,
+)
+let uploadSeq = 0
+
+const drawerUploadingOpen = ref(false)
+
+function showUploadStatus() {
+  drawerUploadingOpen.value = true
+}
 
 const route = useRoute()
 const folder = computed<Folder>(() => {
@@ -79,24 +96,44 @@ async function submitFolder() {
   }
 }
 
+const isUploading = computed(() => uploadingCount.value > 0)
 async function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement
   if (!target.files || target.files.length === 0) return
 
   drawerOpen.value = false
 
+  const files = Array.from(target.files)
+  target.value = ''
+
+  const startIndex = uploadingFiles.value.length
+  uploadingFiles.value.push(
+    ...files.map((f) => ({
+      id: `u-${uploadSeq++}`,
+      name: f.name,
+      status: 'uploading' as const,
+    })),
+  )
+
   let count = 0
-  for (const file of target.files) {
+  for (let i = 0; i < files.length; i++) {
+    // Mutate through the reactive array so status updates render live.
+    const entry = uploadingFiles.value[startIndex + i]
     try {
-      await fileRepo.upload(file, folder.value.id, folder.value.name)
+      await fileRepo.upload(
+        files[i],
+        folder.value.id,
+        folder.value.name,
+      )
+      entry.status = 'done'
       count++
     } catch {
+      entry.status = 'error'
       toast('Error', {
-        description: `Failed to upload "${file.name}".`,
+        description: `Failed to upload "${files[i].name}".`,
       })
     }
   }
-  target.value = ''
 
   if (count > 0) {
     toast('Uploaded', {
@@ -107,6 +144,27 @@ async function onFileChange(e: Event) {
 </script>
 
 <template>
+  <!-- Upload status button (shown while uploads are in progress) -->
+  <Button
+    v-if="isUploading"
+    size="icon"
+    class="bg-card text-foreground hover:bg-accent absolute right-8 bottom-24 z-40 size-12 rounded-full border shadow-lg [&_svg]:size-5"
+    title="Uploading"
+    @click="showUploadStatus"
+  >
+    <LoaderCircle class="animate-spin" />
+    <span
+      class="bg-primary text-primary-foreground absolute -top-1 -right-1 flex min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium"
+    >
+      {{ uploadingCount }}
+    </span>
+  </Button>
+
+  <DriveUploadingDrawer
+    v-model="drawerUploadingOpen"
+    :files="uploadingFiles"
+  />
+
   <!-- Floating action button (bottom-right) -->
   <Button
     size="icon"
