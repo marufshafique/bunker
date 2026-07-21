@@ -46,15 +46,6 @@ export class DriveFileRepository extends CachedRepository<DriveFile> {
       return this.api().post('/files', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         params,
-        onUploadProgress: (progressEvent) => {
-          console.log(progressEvent)
-
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total ?? 1),
-          )
-
-          console.log(`Upload progress: ${progress}%`)
-        },
       })
     } catch (error) {
       console.error('Error uploading file:', error)
