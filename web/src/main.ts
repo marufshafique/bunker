@@ -4,7 +4,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { ormPlugin } from '@/stores/orm'
-import { registerServiceWorker } from '@/registerServiceWorker'
+// import { registerServiceWorker } from '@/registerServiceWorker'
 import { initTelemetry } from '@/telemetry'
 
 initTelemetry()
@@ -18,4 +18,4 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-registerServiceWorker()
+// registerServiceWorker()
