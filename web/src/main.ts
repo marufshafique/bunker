@@ -5,6 +5,9 @@ import App from './App.vue'
 import router from './router'
 import { ormPlugin } from '@/stores/orm'
 import { registerServiceWorker } from '@/registerServiceWorker'
+import { initTelemetry } from '@/telemetry'
+
+initTelemetry()
 
 const app = createApp(App)
 

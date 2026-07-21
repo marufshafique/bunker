@@ -16,11 +16,17 @@ export default class CachedRepository<
       return cached as T[]
     }
 
-    await this.api().get(endpoint)
+    try {
+      await this.api().get(endpoint)
 
-    const data = this.all() as T[]
-    CachedRepository.store.set(cacheKey, data)
+      const data = this.all() as T[]
+      CachedRepository.store.set(cacheKey, data)
 
-    return data
+      return data
+    } catch (error) {
+      console.error(`Failed to fetch data from ${endpoint}:`, error)
+
+      return []
+    }
   }
 }

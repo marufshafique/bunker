@@ -257,7 +257,7 @@ async function onFileChange(e: Event) {
       <Input
         v-model="folderName"
         placeholder="My folder"
-        class="border-border bg-muted/40 focus-visible:border-primary focus-visible:bg-card h-11 rounded-2xl border-2 text-sm focus-visible:ring-0"
+        class="focus-visible:border-primary focus-visible:bg-card h-11 rounded-2xl border-2 text-sm focus-visible:ring-0"
         @keydown.enter="submitFolder"
       />
       <DialogFooter class="mt-6 gap-2.5">

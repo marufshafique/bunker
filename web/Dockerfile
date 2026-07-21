@@ -12,6 +12,8 @@ COPY . .
 # An actual env var takes precedence over any committed .env file.
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_FARO_URL
+ENV VITE_FARO_URL=$VITE_FARO_URL
 RUN npm run build
 
 # ─── Stage 2: Serve ────────────────────────────────────────────

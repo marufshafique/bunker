@@ -1,0 +1,55 @@
+# Frontend telemetry stack for collecting logs from the web app via Grafana Faro.
+#
+# Data flow:
+#   web app (Faro Web SDK) → alloy (Faro receiver, :12347) → loki → grafana
+#
+# Point the Faro Web SDK at http://localhost:12347/collect
+# View collected logs in Grafana at http://localhost:3000 (admin / admin).
+
+services:
+  # Grafana Alloy exposes a Faro receiver endpoint and forwards logs to Loki.
+  alloy:
+    image: grafana/alloy:latest
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345" # Alloy UI
+      - "12347:12347" # Faro receiver (frontend posts telemetry here)
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+    depends_on:
+      - loki
+
+  # Loki stores the logs forwarded by Alloy.
+  loki:
+    image: grafana/loki:latest
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+
+  # Grafana visualizes the logs, with Loki preconfigured as a data source.
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - loki
+
+volumes:
+  loki-data:
+  grafana-data:

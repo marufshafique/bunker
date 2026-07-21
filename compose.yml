@@ -47,6 +47,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:6010}
+        VITE_FARO_URL: ${VITE_FARO_URL:-http://localhost:12347/collect}
     restart: unless-stopped
     depends_on:
       - backend
