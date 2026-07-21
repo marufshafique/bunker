@@ -13,7 +13,7 @@ pub struct CreateFolderRequest {
     folder_id: Option<uuid::Uuid>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct FoldersQuery {
     folder_id: Option<uuid::Uuid>,
 }
@@ -66,6 +66,7 @@ pub async fn get_folders(
     Query(params): Query<FoldersQuery>,
     db_pool: Data<PgPool>,
 ) -> impl Responder {
+    log::info!("Fetching folders with params: {:?}", params);
     let mut builder = sqlx::QueryBuilder::new("SELECT * FROM folders");
     if let Some(ref folder_id) = params.folder_id {
         builder.push(" WHERE folder_id = ");
@@ -84,6 +85,7 @@ pub async fn get_folders(
 
 #[get("/folders/{id}")]
 pub async fn get_folder(id: Path<uuid::Uuid>, db_pool: Data<PgPool>) -> impl Responder {
+    log::info!("Fetching folder with id: {:?}", id);
     let folder = sqlx::query_as!(FolderRow, "SELECT * FROM folders WHERE id = $1", *id)
         .fetch_optional(db_pool.get_ref())
         .await
